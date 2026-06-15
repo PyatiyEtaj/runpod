@@ -16,7 +16,7 @@ set +a
 mkdir -p "$JOYCAPTION_MODEL_DIR" "$RMBG_MODEL_DIR" "$CACHE_DIR/huggingface"
 
 source "$WORKSPACE_DIR/venv-comfyui/bin/activate"
-python -m pip install --upgrade --force-reinstall "huggingface-hub>=1.5.0,<2.0"
+python -m pip install "huggingface-hub>=1.5.0,<2.0" -c "$PROJECT_DIR/constraints/comfyui-cu124.txt"
 
 export HF_HOME="$CACHE_DIR/huggingface"
 

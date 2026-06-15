@@ -15,9 +15,20 @@ set +a
 
 PYTORCH_INDEX_URL="${PYTORCH_INDEX_URL:-https://download.pytorch.org/whl/cu124}"
 
+expected_cuda_version() {
+  case "$PYTORCH_INDEX_URL" in
+    *cu124*) echo "12.4" ;;
+    *cu126*) echo "12.6" ;;
+    *cu128*) echo "12.8" ;;
+    *) echo "" ;;
+  esac
+}
+
 install_torch() {
   local venv_dir="$1"
   local name="$2"
+  local expected_cuda
+  expected_cuda="$(expected_cuda_version)"
 
   if [ ! -d "$venv_dir" ]; then
     echo "Skipping $name: venv not found at $venv_dir"
@@ -25,7 +36,25 @@ install_torch() {
   fi
 
   source "$venv_dir/bin/activate"
-  python -m pip install --upgrade --force-reinstall torch torchvision torchaudio --index-url "$PYTORCH_INDEX_URL"
+
+  current_cuda="$(python - <<'PY'
+try:
+    import torch
+    print(torch.version.cuda or "")
+except Exception:
+    print("")
+PY
+)"
+
+  if [ -n "$expected_cuda" ] && [ "$current_cuda" = "$expected_cuda" ] && [ "${FORCE_TORCH_REINSTALL:-0}" != "1" ]; then
+    echo "Skipping $name PyTorch reinstall: CUDA build already matches $expected_cuda"
+  else
+    python -m pip install --upgrade torch torchvision torchaudio --index-url "$PYTORCH_INDEX_URL"
+  fi
+
+  python -m pip install --upgrade "numpy<2.0.0" "pillow<12.0" "scipy<1.12"
+  python -m pip uninstall -y xformers || true
+
   python - <<'PY'
 import torch
 print("torch:", torch.__version__)

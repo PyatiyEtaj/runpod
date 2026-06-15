@@ -1,0 +1,8 @@
+# RunPod L40S host driver 12040 -> CUDA 12.4 PyTorch wheels.
+# Keep these ranges conservative; ComfyUI/JoyCaption can use newer transformers.
+numpy<2.0.0
+pillow<12.0
+scipy<1.12
+huggingface-hub>=1.5.0,<2.0
+rich>=13.8.0
+

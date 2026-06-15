@@ -36,46 +36,16 @@ cd "$KOHYA_DIR"
 git submodule update --init --recursive
 cd "$PROJECT_DIR"
 
-python3 -m venv "$WORKSPACE_DIR/venv-comfyui"
-source "$WORKSPACE_DIR/venv-comfyui/bin/activate"
-pip install --upgrade pip wheel
-pip install -r "$COMFYUI_DIR/requirements.txt"
-python -m pip install --upgrade --force-reinstall "huggingface-hub>=1.5.0,<2.0"
-deactivate
-
-bash "$PROJECT_DIR/scripts/install_pytorch_cuda.sh"
-
-bash "$PROJECT_DIR/scripts/install_comfyui_custom_nodes.sh"
-
-python3 -m venv "$WORKSPACE_DIR/venv-kohya"
-source "$WORKSPACE_DIR/venv-kohya/bin/activate"
-pip install --upgrade pip wheel
-cd "$KOHYA_DIR"
-if [ -f "$KOHYA_DIR/requirements_linux.txt" ]; then
-  KOHYA_REQUIREMENTS=requirements_linux.txt
+if [ ! -d "$WORKSPACE_DIR/venv-comfyui" ] || [ ! -d "$WORKSPACE_DIR/venv-kohya" ] || [ "${CLEAN_REBUILD:-0}" = "1" ]; then
+  bash "$PROJECT_DIR/scripts/rebuild_venvs_clean.sh"
 else
-  KOHYA_REQUIREMENTS=requirements.txt
+  echo "Project virtual environments already exist:"
+  echo "  $WORKSPACE_DIR/venv-comfyui"
+  echo "  $WORKSPACE_DIR/venv-kohya"
+  echo
+  echo "Skipping dependency install. To rebuild cleanly, run:"
+  echo "  bash scripts/rebuild_venvs_clean.sh"
 fi
-
-FILTERED_REQUIREMENTS="$KOHYA_DIR/.requirements.filtered.txt"
-grep -vE 'sd-scripts|tensorflow==2\.15\.0\.post1|^[[:space:]]*(-e[[:space:]]+)?\.{1,2}[[:space:]]*$|kohya_ss' "$KOHYA_REQUIREMENTS" > "$FILTERED_REQUIREMENTS"
-pip install -r "$FILTERED_REQUIREMENTS"
-
-if [ -f "$KOHYA_DIR/sd-scripts/requirements.txt" ]; then
-  SD_SCRIPTS_REQUIREMENTS="$KOHYA_DIR/sd-scripts/.requirements.filtered.txt"
-  grep -vE 'sd-scripts|tensorflow==2\.15\.0\.post1|^[[:space:]]*(-e[[:space:]]+)?\.{1,2}[[:space:]]*$|kohya_ss' "$KOHYA_DIR/sd-scripts/requirements.txt" > "$SD_SCRIPTS_REQUIREMENTS"
-  pip install -r "$SD_SCRIPTS_REQUIREMENTS"
-elif [ -f "$KOHYA_DIR/sd-scripts/requirements_linux.txt" ]; then
-  SD_SCRIPTS_REQUIREMENTS="$KOHYA_DIR/sd-scripts/.requirements.filtered.txt"
-  grep -vE 'sd-scripts|tensorflow==2\.15\.0\.post1|^[[:space:]]*(-e[[:space:]]+)?\.{1,2}[[:space:]]*$|kohya_ss' "$KOHYA_DIR/sd-scripts/requirements_linux.txt" > "$SD_SCRIPTS_REQUIREMENTS"
-  pip install -r "$SD_SCRIPTS_REQUIREMENTS"
-fi
-
-python -m pip install --upgrade "huggingface-hub>=0.28.1,<1.0" "rich>=13.8.0"
-cd "$PROJECT_DIR"
-deactivate
-
-bash "$PROJECT_DIR/scripts/install_pytorch_cuda.sh"
 
 echo "Bootstrap complete."
 echo "Next model step:"

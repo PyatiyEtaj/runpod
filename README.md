@@ -272,6 +272,28 @@ If VRAM is tight, reduce `network_dim` to `16` or disable sampling during traini
 
 ## Troubleshooting
 
+If dependency versions got messy, do not keep repairing packages one by one. Rebuild the project virtual environments from scratch:
+
+```bash
+cd /workspace/ai-ver-2
+bash scripts/rebuild_venvs_clean.sh
+```
+
+This deletes only:
+
+```text
+/workspace/venv-comfyui
+/workspace/venv-kohya
+```
+
+It does not delete models, datasets, outputs, `/workspace/ComfyUI`, or `/workspace/kohya_ss`.
+
+For L40S with driver `12040`, keep this in `.env`:
+
+```text
+PYTORCH_INDEX_URL=https://download.pytorch.org/whl/cu124
+```
+
 If ComfyUI fails with:
 
 ```text
@@ -285,12 +307,14 @@ the installed PyTorch CUDA build is newer than the host NVIDIA driver. Driver `1
 PYTORCH_INDEX_URL=https://download.pytorch.org/whl/cu124
 ```
 
-Then reinstall PyTorch in both project virtual environments:
+If only the CUDA build is wrong, reinstall PyTorch in both project virtual environments:
 
 ```bash
 cd /workspace/ai-ver-2
 bash scripts/install_pytorch_cuda.sh
 ```
+
+The script is idempotent: if the current PyTorch CUDA build already matches `PYTORCH_INDEX_URL`, it skips reinstalling `torch` and its NVIDIA dependencies.
 
 If you move to a RunPod host with a newer CUDA 12.8 driver, you can change `PYTORCH_INDEX_URL` in `.env` to:
 
@@ -345,19 +369,21 @@ huggingface-hub>=1.5.0,<2.0
 rich>=13.8.0
 ```
 
-For the ComfyUI environment only, run:
-
-```bash
-source /workspace/venv-comfyui/bin/activate
-python -m pip install --upgrade --force-reinstall "huggingface-hub>=1.5.0,<2.0" "rich>=13.8.0"
-deactivate
-```
-
-Or repair both project virtual environments:
+For minor dependency drift, repair both project virtual environments:
 
 ```bash
 bash scripts/repair_venvs.sh
 ```
+
+The repair script also pins runtime packages that often get upgraded too far by PyTorch/Kohya installs:
+
+```text
+numpy<2.0.0
+pillow<12.0
+scipy<1.12
+```
+
+It removes `xformers` when it is incompatible with the installed PyTorch build. The project uses SDPA, so `xformers` is not required.
 
 ## Порядок Запуска Проекта
 
@@ -375,6 +401,12 @@ cp .env.example .env
 ```bash
 bash scripts/setup_project.sh
 bash scripts/bootstrap_runpod.sh
+```
+
+`bootstrap_runpod.sh` does not reinstall dependencies if `/workspace/venv-comfyui` and `/workspace/venv-kohya` already exist. To intentionally rebuild both virtual environments:
+
+```bash
+bash scripts/rebuild_venvs_clean.sh
 ```
 
 4. Скачать модели:
