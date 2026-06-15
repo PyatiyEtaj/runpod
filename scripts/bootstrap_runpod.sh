@@ -55,7 +55,7 @@ else
   KOHYA_REQUIREMENTS=requirements.txt
 fi
 
-FILTERED_REQUIREMENTS="$CACHE_DIR/kohya_requirements.filtered.txt"
+FILTERED_REQUIREMENTS="$KOHYA_DIR/.requirements.filtered.txt"
 grep -vE 'sd-scripts' "$KOHYA_REQUIREMENTS" > "$FILTERED_REQUIREMENTS"
 pip install -r "$FILTERED_REQUIREMENTS"
 

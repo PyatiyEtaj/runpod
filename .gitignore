@@ -67,6 +67,7 @@ models/**/refs/
 # ComfyUI local/generated files if copied into the repo.
 ComfyUI/
 kohya_ss/
+.requirements.filtered.txt
 custom_nodes/*/__pycache__/
 
 !cache/.gitkeep
