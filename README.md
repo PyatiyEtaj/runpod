@@ -149,6 +149,7 @@ The dataset pipeline runs in a separate virtual environment:
 ```
 
 This keeps JoyCaption/RMBG/transformers dependencies out of ComfyUI and Kohya.
+RMBG-2.0 requires `kornia`, which is installed only in this dataset environment.
 
 Create or rebuild the dataset environment with:
 
