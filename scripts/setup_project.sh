@@ -28,12 +28,13 @@ mkdir -p \
   "$SAMPLE_DIR" \
   "$CACHE_DIR"
 
-echo "Project is ready."
+echo "Project directories are ready."
 echo "Raw images:       $RAW_DATASET_DIR"
 echo "Training dataset: $TRAIN_DATASET_DIR"
 echo "LoRA output:      $OUTPUT_DIR"
 echo
 echo "Next:"
-echo "  scripts/bootstrap_runpod.sh"
-echo "  scripts/start_comfyui.sh"
-echo "  scripts/train_flux_lora.sh"
+echo "  bash scripts/bootstrap_runpod.sh"
+echo "  bash scripts/download_flux_dev.sh"
+echo "  bash scripts/download_hf_models.sh"
+echo "  bash scripts/start_comfyui.sh"

@@ -27,6 +27,8 @@
       "height": 1024,
       "mode": "crop_or_pad"
     },
+    "skip_background_removal_percent": 20.0,
+    "skip_background_removal_seed": 42,
     "caption_sidecar": true,
     "caption_extension": ".txt"
   },
@@ -44,6 +46,8 @@
         "width": 1024,
         "height": 1024,
         "max_new_tokens": 128,
+        "skip_background_removal_percent": 20.0,
+        "skip_background_removal_seed": 42,
         "overwrite": false
       }
     }

@@ -1,6 +1,6 @@
 # ai-ver-2
 
-RunPod project for two tasks:
+RunPod project for the standard PyTorch + Python Linux template. It handles two tasks:
 
 1. Build a FLUX LoRA dataset with ComfyUI:
    - remove background;
@@ -48,7 +48,7 @@ Clone this repository into `/workspace/ai-ver-2`, then run:
 ```bash
 cd /workspace/ai-ver-2
 cp .env.example .env
-bash docker/start.sh
+bash scripts/setup_project.sh
 bash scripts/bootstrap_runpod.sh
 bash scripts/download_flux_dev.sh
 bash scripts/download_hf_models.sh
@@ -59,13 +59,7 @@ It also installs the local ComfyUI node pack from `comfyui/custom_nodes/ai_ver2_
 `download_flux_dev.sh` downloads FLUX.1-dev, text encoders, VAE, and installs ComfyUI model paths.
 `download_hf_models.sh` downloads the selected dataset-pipeline models from Hugging Face.
 
-If you build a custom RunPod image, use:
-
-```text
-docker/Dockerfile
-```
-
-The Dockerfile only installs system-level prerequisites. Python environments and app repositories are still created by `scripts/bootstrap_runpod.sh` on persistent storage.
+No Docker build is required for the normal RunPod PyTorch template. The scripts install ComfyUI, Kohya_ss, Python environments, models, and local ComfyUI nodes on persistent storage.
 
 ## Required Models
 
@@ -163,7 +157,8 @@ bash scripts/install_comfyui_custom_nodes.sh
 The node does the full dataset pass:
 
 - reads images from `datasets/raw`;
-- removes background with `briaai/RMBG-2.0`;
+- removes background with `briaai/RMBG-2.0` for 80% of images;
+- keeps background unchanged for 20% of images;
 - resizes/crops to `1024x1024`;
 - captions with `fancyfeast/llama-joycaption-alpha-two-hf-llava`;
 - writes `.png + .txt` pairs to `datasets/processed`.
@@ -179,6 +174,15 @@ No placeholder replacement is needed. The workflow uses the real node class:
 ```text
 AIVer2DatasetBuilder
 ```
+
+The default dataset mix is configured in the workflow:
+
+```text
+skip_background_removal_percent = 20.0
+skip_background_removal_seed = 42
+```
+
+The selection is deterministic by filename and seed, so reruns keep the same images with background unless you change the seed.
 
 ## Dataset Preparation
 
@@ -265,3 +269,76 @@ If VRAM is tight, reduce `network_dim` to `16` or disable sampling during traini
 - Keep raw images, processed datasets, model files, and LoRA outputs on persistent storage.
 - Clean `cache/` when storage gets tight.
 - Do not commit model files or datasets; `.gitignore` excludes them.
+
+## Порядок Запуска Проекта
+
+1. Подготовить проект на RunPod:
+
+```bash
+cd /workspace/ai-ver-2
+cp .env.example .env
+```
+
+2. Вписать `HF_TOKEN` в `.env`. Токен нужен для gated модели `black-forest-labs/FLUX.1-dev`.
+
+3. Установить ComfyUI, Kohya_ss, Python-зависимости и локальные ComfyUI nodes:
+
+```bash
+bash scripts/setup_project.sh
+bash scripts/bootstrap_runpod.sh
+```
+
+4. Скачать модели:
+
+```bash
+bash scripts/download_flux_dev.sh
+bash scripts/download_hf_models.sh
+```
+
+5. Запустить ComfyUI:
+
+```bash
+bash scripts/start_comfyui.sh
+```
+
+6. Открыть RunPod port `8188`, загрузить workflow:
+
+```text
+/workspace/ai-ver-2/workflows/comfyui/dataset_pipeline.json
+```
+
+7. Положить исходные изображения в:
+
+```text
+/workspace/ai-ver-2/datasets/raw/
+```
+
+8. В ComfyUI запустить node:
+
+```text
+AI Ver 2 Dataset Builder
+```
+
+Он создаст обработанные изображения и captions в:
+
+```text
+/workspace/ai-ver-2/datasets/processed/
+```
+
+9. Синхронизировать готовый dataset для Kohya:
+
+```bash
+bash scripts/prepare_dataset.sh
+```
+
+10. Запустить обучение FLUX LoRA:
+
+```bash
+bash scripts/train_flux_lora.sh
+```
+
+Готовая LoRA будет сохранена в:
+
+```text
+/workspace/ai-ver-2/outputs/lora/
+```

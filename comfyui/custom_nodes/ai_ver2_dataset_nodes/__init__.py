@@ -1,3 +1,4 @@
+import hashlib
 import os
 from pathlib import Path
 
@@ -39,6 +40,18 @@ def _resize_crop_pad(image, width, height):
     return image
 
 
+def _should_skip_background_removal(path, percent, seed):
+    if percent <= 0:
+        return False
+    if percent >= 100:
+        return True
+
+    key = f"{seed}:{path.name}".encode("utf-8")
+    digest = hashlib.sha256(key).digest()
+    value = int.from_bytes(digest[:8], "big") % 10000
+    return value < int(percent * 100)
+
+
 class AIVer2DatasetBuilder:
     _rmbg_model = None
     _joy_model = None
@@ -59,6 +72,8 @@ class AIVer2DatasetBuilder:
                 "width": ("INT", {"default": 1024, "min": 256, "max": 2048, "step": 64}),
                 "height": ("INT", {"default": 1024, "min": 256, "max": 2048, "step": 64}),
                 "max_new_tokens": ("INT", {"default": 128, "min": 32, "max": 512, "step": 16}),
+                "skip_background_removal_percent": ("FLOAT", {"default": 20.0, "min": 0.0, "max": 100.0, "step": 1.0}),
+                "skip_background_removal_seed": ("INT", {"default": 42, "min": 0, "max": 2147483647, "step": 1}),
                 "overwrite": ("BOOLEAN", {"default": False}),
             }
         }
@@ -161,6 +176,8 @@ class AIVer2DatasetBuilder:
         width,
         height,
         max_new_tokens,
+        skip_background_removal_percent,
+        skip_background_removal_seed,
         overwrite,
     ):
         input_path = Path(input_dir)
@@ -177,6 +194,8 @@ class AIVer2DatasetBuilder:
         device = "cuda" if torch.cuda.is_available() else "cpu"
         processed = 0
         skipped = 0
+        background_removed = 0
+        background_kept = 0
 
         for source in images:
             stem = source.stem
@@ -188,7 +207,13 @@ class AIVer2DatasetBuilder:
                 continue
 
             image = Image.open(source)
-            image = self._remove_background(image, rmbg_model_dir, device)
+            if _should_skip_background_removal(source, skip_background_removal_percent, skip_background_removal_seed):
+                image = ImageOps.exif_transpose(image).convert("RGBA")
+                background_kept += 1
+            else:
+                image = self._remove_background(image, rmbg_model_dir, device)
+                background_removed += 1
+
             image = _resize_crop_pad(image, width, height)
             caption = self._caption(image, joycaption_model_dir, caption_prompt, max_new_tokens, device)
 
@@ -196,7 +221,12 @@ class AIVer2DatasetBuilder:
             caption_out.write_text(caption + "\n", encoding="utf-8")
             processed += 1
 
-        return (f"Processed {processed} images, skipped {skipped}. Output: {output_path}",)
+        return (
+            f"Processed {processed} images, skipped {skipped}. "
+            f"Background removed: {background_removed}. "
+            f"Background kept: {background_kept}. "
+            f"Output: {output_path}",
+        )
 
 
 NODE_CLASS_MAPPINGS = {

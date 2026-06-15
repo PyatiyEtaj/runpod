@@ -1,25 +1,83 @@
 .env
+.env.*
+!.env.example
+
+# Python/cache artifacts.
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local virtual environments.
+.venv/
+venv/
+venv-*/
+
+# Runtime caches and temporary files.
 cache/*
+tmp/
+temp/
+*.tmp
+*.log
+
+# Datasets generated or uploaded at runtime.
 datasets/raw/*
 datasets/processed/*
 datasets/flux_lora/*
+
+# Model storage. Keep only folder placeholders in git.
 models/comfyui/*
 models/flux/*
 models/joycaption/*
 models/rmbg/*
+
+# Training and generation outputs.
 outputs/lora/*
 outputs/logs/*
 outputs/samples/*
+outputs/**/*.safetensors
+outputs/**/*.ckpt
+outputs/**/*.pt
+outputs/**/*.pth
+outputs/**/*.png
+outputs/**/*.jpg
+outputs/**/*.jpeg
+outputs/**/*.webp
+
+# Large model/checkpoint files anywhere in the repo.
+*.safetensors
+*.ckpt
+*.pt
+*.pth
+*.bin
+*.onnx
+*.gguf
+
+# Hugging Face snapshots sometimes contain symlinks/metadata.
+models/**/.cache/
+models/**/snapshots/
+models/**/blobs/
+models/**/refs/
+
+# ComfyUI local/generated files if copied into the repo.
+ComfyUI/
+kohya_ss/
+custom_nodes/*/__pycache__/
+
 !cache/.gitkeep
 !datasets/raw/.gitkeep
 !datasets/processed/.gitkeep
 !datasets/flux_lora/.gitkeep
 !models/comfyui/.gitkeep
 !models/flux/.gitkeep
+!models/flux/diffusion_models/
 !models/flux/diffusion_models/.gitkeep
+!models/flux/text_encoders/
 !models/flux/text_encoders/.gitkeep
+!models/flux/vae/
 !models/flux/vae/.gitkeep
 !models/joycaption/.gitkeep
 !models/rmbg/.gitkeep
