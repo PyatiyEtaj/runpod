@@ -166,9 +166,16 @@ bash scripts/process_dataset.sh
 Crop modes:
 
 ```bash
-bash scripts/process_dataset.sh --crop-region full
-bash scripts/process_dataset.sh --crop-region upper
-bash scripts/process_dataset.sh --crop-region lower
+bash scripts/process_dataset.sh --crop-region full --resize-mode contain
+bash scripts/process_dataset.sh --crop-region upper --resize-mode cover
+bash scripts/process_dataset.sh --crop-region lower --resize-mode cover
+```
+
+Resize modes:
+
+```text
+contain  # fit the whole image into 1024x1024 with transparent padding
+cover    # fill 1024x1024 and center-crop overflow
 ```
 
 Convenience wrappers:

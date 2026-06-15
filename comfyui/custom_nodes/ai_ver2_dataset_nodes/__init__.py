@@ -15,12 +15,18 @@ def _image_to_tensor(image):
     return torch.from_numpy(array)[None,]
 
 
-def _resize_crop_pad(image, width, height):
+def _resize_crop_pad(image, width, height, resize_mode):
     image = ImageOps.exif_transpose(image).convert("RGBA")
     source_ratio = image.width / image.height
     target_ratio = width / height
+    resize_mode = resize_mode.lower().strip()
 
-    if source_ratio > target_ratio:
+    if resize_mode not in {"cover", "contain"}:
+        raise ValueError(f"Unsupported resize_mode: {resize_mode}. Use cover or contain.")
+
+    if (resize_mode == "cover" and source_ratio > target_ratio) or (
+        resize_mode == "contain" and source_ratio < target_ratio
+    ):
         new_height = height
         new_width = round(height * source_ratio)
     else:
@@ -28,14 +34,16 @@ def _resize_crop_pad(image, width, height):
         new_height = round(width / source_ratio)
 
     image = image.resize((new_width, new_height), Image.Resampling.LANCZOS)
-    left = max(0, (new_width - width) // 2)
-    top = max(0, (new_height - height) // 2)
-    image = image.crop((left, top, left + width, top + height))
+    canvas = Image.new("RGBA", (width, height), (0, 0, 0, 0))
 
-    if image.size != (width, height):
-        canvas = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+    if resize_mode == "cover":
+        left = max(0, (new_width - width) // 2)
+        top = max(0, (new_height - height) // 2)
+        image = image.crop((left, top, left + width, top + height))
         canvas.alpha_composite(image, ((width - image.width) // 2, (height - image.height) // 2))
-        image = canvas
+    else:
+        canvas.alpha_composite(image, ((width - image.width) // 2, (height - image.height) // 2))
+    image = canvas
 
     return image
 
@@ -86,6 +94,7 @@ class AIVer2DatasetBuilder:
                 "width": ("INT", {"default": 1024, "min": 256, "max": 2048, "step": 64}),
                 "height": ("INT", {"default": 1024, "min": 256, "max": 2048, "step": 64}),
                 "crop_region": (["full", "upper", "lower"], {"default": "full"}),
+                "resize_mode": (["contain", "cover"], {"default": "contain"}),
                 "max_new_tokens": ("INT", {"default": 128, "min": 32, "max": 512, "step": 16}),
                 "skip_background_removal_percent": ("FLOAT", {"default": 20.0, "min": 0.0, "max": 100.0, "step": 1.0}),
                 "skip_background_removal_seed": ("INT", {"default": 42, "min": 0, "max": 2147483647, "step": 1}),
@@ -218,6 +227,7 @@ class AIVer2DatasetBuilder:
         width,
         height,
         crop_region,
+        resize_mode,
         max_new_tokens,
         skip_background_removal_percent,
         skip_background_removal_seed,
@@ -258,7 +268,7 @@ class AIVer2DatasetBuilder:
                 image = self._remove_background(image, rmbg_model_dir, device)
                 background_removed += 1
 
-            image = _resize_crop_pad(image, width, height)
+            image = _resize_crop_pad(image, width, height, resize_mode)
             caption = self._caption(image, joycaption_model_dir, caption_prompt, max_new_tokens, device)
 
             image.save(image_out)

@@ -31,6 +31,7 @@ def main():
     parser.add_argument("--width", type=int, default=1024)
     parser.add_argument("--height", type=int, default=1024)
     parser.add_argument("--crop-region", choices=["full", "upper", "lower"], default="full")
+    parser.add_argument("--resize-mode", choices=["contain", "cover"], default="contain")
     parser.add_argument("--max-new-tokens", type=int, default=128)
     parser.add_argument("--skip-background-removal-percent", type=float, default=20.0)
     parser.add_argument("--skip-background-removal-seed", type=int, default=42)
@@ -48,6 +49,7 @@ def main():
         width=args.width,
         height=args.height,
         crop_region=args.crop_region,
+        resize_mode=args.resize_mode,
         max_new_tokens=args.max_new_tokens,
         skip_background_removal_percent=args.skip_background_removal_percent,
         skip_background_removal_seed=args.skip_background_removal_seed,
