@@ -272,6 +272,32 @@ If VRAM is tight, reduce `network_dim` to `16` or disable sampling during traini
 
 ## Troubleshooting
 
+If ComfyUI fails with:
+
+```text
+RuntimeError: The NVIDIA driver on your system is too old
+found version 12040
+```
+
+the installed PyTorch CUDA build is newer than the host NVIDIA driver. Driver `12040` means the host supports CUDA 12.4, so use the default project setting:
+
+```text
+PYTORCH_INDEX_URL=https://download.pytorch.org/whl/cu124
+```
+
+Then reinstall PyTorch in both project virtual environments:
+
+```bash
+cd /workspace/ai-ver-2
+bash scripts/install_pytorch_cuda.sh
+```
+
+If you move to a RunPod host with a newer CUDA 12.8 driver, you can change `PYTORCH_INDEX_URL` in `.env` to:
+
+```text
+https://download.pytorch.org/whl/cu128
+```
+
 If Kohya install fails with:
 
 ```text

@@ -43,6 +43,8 @@ pip install -r "$COMFYUI_DIR/requirements.txt"
 python -m pip install --upgrade --force-reinstall "huggingface-hub>=1.5.0,<2.0"
 deactivate
 
+bash "$PROJECT_DIR/scripts/install_pytorch_cuda.sh"
+
 bash "$PROJECT_DIR/scripts/install_comfyui_custom_nodes.sh"
 
 python3 -m venv "$WORKSPACE_DIR/venv-kohya"
@@ -72,6 +74,8 @@ fi
 python -m pip install --upgrade "huggingface-hub>=0.28.1,<1.0" "rich>=13.8.0"
 cd "$PROJECT_DIR"
 deactivate
+
+bash "$PROJECT_DIR/scripts/install_pytorch_cuda.sh"
 
 echo "Bootstrap complete."
 echo "Next model step:"
