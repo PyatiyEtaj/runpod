@@ -56,7 +56,7 @@ else
 fi
 
 FILTERED_REQUIREMENTS="$KOHYA_DIR/.requirements.filtered.txt"
-grep -vE 'sd-scripts|tensorflow==2\.15\.0\.post1' "$KOHYA_REQUIREMENTS" > "$FILTERED_REQUIREMENTS"
+grep -vE 'sd-scripts|tensorflow==2\.15\.0\.post1|^[[:space:]]*(-e[[:space:]]+)?\.[[:space:]]*$' "$KOHYA_REQUIREMENTS" > "$FILTERED_REQUIREMENTS"
 pip install -r "$FILTERED_REQUIREMENTS"
 
 if [ -f "$KOHYA_DIR/sd-scripts/requirements.txt" ]; then

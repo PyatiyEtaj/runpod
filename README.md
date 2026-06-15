@@ -295,6 +295,14 @@ No matching distribution found for tensorflow==2.15.0.post1
 
 rerun the updated bootstrap script. The project filters that pinned TensorFlow dependency because it is not available for Python 3.12 and is not required for the PyTorch FLUX LoRA path.
 
+If Kohya install fails with:
+
+```text
+Multiple top-level packages discovered in a flat-layout
+```
+
+rerun the updated bootstrap script. The project skips editable installation of the Kohya repository root and runs Kohya scripts directly from `/workspace/kohya_ss`.
+
 ## Порядок Запуска Проекта
 
 1. Подготовить проект на RunPod:
