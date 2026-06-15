@@ -19,7 +19,7 @@ TORCH_VERSION="${TORCH_VERSION:-2.6.0}"
 TORCHVISION_VERSION="${TORCHVISION_VERSION:-0.21.0}"
 TORCHAUDIO_VERSION="${TORCHAUDIO_VERSION:-2.6.0}"
 KOHYA_CONSTRAINTS="$PROJECT_DIR/constraints/kohya-cu124.txt"
-FILTER_RE='(^|[[:space:]])(torch|torchvision|torchaudio|xformers|huggingface-hub|huggingface_hub)([<=>[:space:]]|$)|sd-scripts|tensorflow==2\.15\.0\.post1|^[[:space:]]*(-e[[:space:]]+)?\.{1,2}[[:space:]]*$|kohya_ss'
+FILTER_RE='(^|[[:space:]])(torch|torchvision|torchaudio|xformers|huggingface-hub|huggingface_hub|rich)([<=>[:space:]]|$)|sd-scripts|tensorflow==2\.15\.0\.post1|^[[:space:]]*(-e[[:space:]]+)?\.{1,2}[[:space:]]*$|kohya_ss'
 
 if [ ! -d "$KOHYA_DIR" ]; then
   git clone https://github.com/bmaltais/kohya_ss.git "$KOHYA_DIR"
@@ -55,6 +55,7 @@ elif [ -f "$KOHYA_DIR/sd-scripts/requirements_linux.txt" ]; then
   python -m pip install -r "$KOHYA_DIR/sd-scripts/.requirements.filtered.txt" -c "$KOHYA_CONSTRAINTS"
 fi
 python -m pip uninstall -y xformers || true
+python -m pip install "rich>=13.8.0" -c "$KOHYA_CONSTRAINTS"
 cd "$PROJECT_DIR"
 deactivate
 

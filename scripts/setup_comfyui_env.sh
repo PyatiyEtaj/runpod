@@ -19,7 +19,7 @@ TORCH_VERSION="${TORCH_VERSION:-2.6.0}"
 TORCHVISION_VERSION="${TORCHVISION_VERSION:-0.21.0}"
 TORCHAUDIO_VERSION="${TORCHAUDIO_VERSION:-2.6.0}"
 COMFY_CONSTRAINTS="$PROJECT_DIR/constraints/comfyui-cu124.txt"
-FILTER_RE='(^|[[:space:]])(torch|torchvision|torchaudio|xformers|huggingface-hub|huggingface_hub)([<=>[:space:]]|$)'
+FILTER_RE='(^|[[:space:]])(torch|torchvision|torchaudio|xformers|huggingface-hub|huggingface_hub|rich)([<=>[:space:]]|$)'
 
 if [ ! -d "$COMFYUI_DIR" ]; then
   git clone https://github.com/comfyanonymous/ComfyUI.git "$COMFYUI_DIR"
@@ -37,6 +37,7 @@ python -m pip install \
 grep -vE "$FILTER_RE" "$COMFYUI_DIR/requirements.txt" > "$COMFYUI_DIR/.requirements.filtered.txt"
 python -m pip install -r "$COMFYUI_DIR/.requirements.filtered.txt" -c "$COMFY_CONSTRAINTS"
 python -m pip uninstall -y xformers || true
+python -m pip install "rich>=13.8.0" -c "$COMFY_CONSTRAINTS"
 deactivate
 
 bash "$PROJECT_DIR/scripts/install_comfyui_model_paths.sh"
