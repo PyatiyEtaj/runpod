@@ -106,14 +106,14 @@ class AIVer2DatasetBuilder:
 
     def _load_joycaption(self, model_dir, device):
         if self.__class__._joy_model is None or self.__class__._joy_processor is None:
-            from transformers import AutoModelForVision2Seq, AutoProcessor
+            from transformers import AutoProcessor, LlavaForConditionalGeneration
 
             processor = AutoProcessor.from_pretrained(model_dir, trust_remote_code=True)
-            model = AutoModelForVision2Seq.from_pretrained(
+            model = LlavaForConditionalGeneration.from_pretrained(
                 model_dir,
                 trust_remote_code=True,
                 torch_dtype=torch.bfloat16 if device == "cuda" else torch.float32,
-                device_map="auto" if device == "cuda" else None,
+                device_map=0 if device == "cuda" else None,
             )
             if device != "cuda":
                 model.to(device)
@@ -155,26 +155,42 @@ class AIVer2DatasetBuilder:
         if hasattr(processor, "apply_chat_template"):
             messages = [
                 {
+                    "role": "system",
+                    "content": "You are a helpful image captioner.",
+                },
+                {
                     "role": "user",
-                    "content": [
-                        {"type": "image"},
-                        {"type": "text", "text": prompt},
-                    ],
+                    "content": prompt,
                 }
             ]
-            text = processor.apply_chat_template(messages, add_generation_prompt=True)
+            text = processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
         else:
             text = prompt
 
-        inputs = processor(images=rgb, text=text, return_tensors="pt")
+        inputs = processor(text=[text], images=[rgb], return_tensors="pt")
         inputs = {key: value.to(model.device) if hasattr(value, "to") else value for key, value in inputs.items()}
+        if "pixel_values" in inputs and device == "cuda":
+            inputs["pixel_values"] = inputs["pixel_values"].to(torch.bfloat16)
 
         with torch.inference_mode():
-            output_ids = model.generate(**inputs, max_new_tokens=max_new_tokens, do_sample=False)
+            output_ids = model.generate(
+                **inputs,
+                max_new_tokens=max_new_tokens,
+                do_sample=True,
+                suppress_tokens=None,
+                use_cache=True,
+                temperature=0.6,
+                top_k=None,
+                top_p=0.9,
+            )[0]
 
-        caption = processor.decode(output_ids[0], skip_special_tokens=True).strip()
-        if prompt in caption:
-            caption = caption.split(prompt, 1)[-1].strip()
+        if "input_ids" in inputs:
+            output_ids = output_ids[inputs["input_ids"].shape[1]:]
+        caption = processor.tokenizer.decode(
+            output_ids,
+            skip_special_tokens=True,
+            clean_up_tokenization_spaces=False,
+        ).strip()
         return " ".join(caption.split())
 
     def build_dataset(
