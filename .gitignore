@@ -68,6 +68,7 @@ models/**/refs/
 ComfyUI/
 kohya_ss/
 .requirements.filtered.txt
+**/.requirements.filtered.txt
 custom_nodes/*/__pycache__/
 
 !cache/.gitkeep

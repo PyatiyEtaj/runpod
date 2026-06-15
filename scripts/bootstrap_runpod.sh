@@ -56,13 +56,17 @@ else
 fi
 
 FILTERED_REQUIREMENTS="$KOHYA_DIR/.requirements.filtered.txt"
-grep -vE 'sd-scripts|tensorflow==2\.15\.0\.post1|^[[:space:]]*(-e[[:space:]]+)?\.[[:space:]]*$' "$KOHYA_REQUIREMENTS" > "$FILTERED_REQUIREMENTS"
+grep -vE 'sd-scripts|tensorflow==2\.15\.0\.post1|^[[:space:]]*(-e[[:space:]]+)?\.{1,2}[[:space:]]*$|kohya_ss' "$KOHYA_REQUIREMENTS" > "$FILTERED_REQUIREMENTS"
 pip install -r "$FILTERED_REQUIREMENTS"
 
 if [ -f "$KOHYA_DIR/sd-scripts/requirements.txt" ]; then
-  pip install -r "$KOHYA_DIR/sd-scripts/requirements.txt"
+  SD_SCRIPTS_REQUIREMENTS="$KOHYA_DIR/sd-scripts/.requirements.filtered.txt"
+  grep -vE 'sd-scripts|tensorflow==2\.15\.0\.post1|^[[:space:]]*(-e[[:space:]]+)?\.{1,2}[[:space:]]*$|kohya_ss' "$KOHYA_DIR/sd-scripts/requirements.txt" > "$SD_SCRIPTS_REQUIREMENTS"
+  pip install -r "$SD_SCRIPTS_REQUIREMENTS"
 elif [ -f "$KOHYA_DIR/sd-scripts/requirements_linux.txt" ]; then
-  pip install -r "$KOHYA_DIR/sd-scripts/requirements_linux.txt"
+  SD_SCRIPTS_REQUIREMENTS="$KOHYA_DIR/sd-scripts/.requirements.filtered.txt"
+  grep -vE 'sd-scripts|tensorflow==2\.15\.0\.post1|^[[:space:]]*(-e[[:space:]]+)?\.{1,2}[[:space:]]*$|kohya_ss' "$KOHYA_DIR/sd-scripts/requirements_linux.txt" > "$SD_SCRIPTS_REQUIREMENTS"
+  pip install -r "$SD_SCRIPTS_REQUIREMENTS"
 fi
 cd "$PROJECT_DIR"
 deactivate
