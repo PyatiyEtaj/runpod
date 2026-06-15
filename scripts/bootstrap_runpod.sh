@@ -68,6 +68,8 @@ elif [ -f "$KOHYA_DIR/sd-scripts/requirements_linux.txt" ]; then
   grep -vE 'sd-scripts|tensorflow==2\.15\.0\.post1|^[[:space:]]*(-e[[:space:]]+)?\.{1,2}[[:space:]]*$|kohya_ss' "$KOHYA_DIR/sd-scripts/requirements_linux.txt" > "$SD_SCRIPTS_REQUIREMENTS"
   pip install -r "$SD_SCRIPTS_REQUIREMENTS"
 fi
+
+pip install --upgrade "huggingface-hub>=0.28.1" "rich>=13.8.0"
 cd "$PROJECT_DIR"
 deactivate
 

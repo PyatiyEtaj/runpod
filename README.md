@@ -303,6 +303,13 @@ Multiple top-level packages discovered in a flat-layout
 
 rerun the updated bootstrap script. The project skips editable installation of the Kohya repository root and runs Kohya scripts directly from `/workspace/kohya_ss`.
 
+If pip prints dependency conflicts for `huggingface-hub` or `rich`, rerun the updated bootstrap script. It finishes Kohya installation by upgrading:
+
+```text
+huggingface-hub>=0.28.1
+rich>=13.8.0
+```
+
 ## Порядок Запуска Проекта
 
 1. Подготовить проект на RunPod:
