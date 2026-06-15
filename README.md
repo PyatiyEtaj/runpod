@@ -287,6 +287,14 @@ bash scripts/bootstrap_runpod.sh
 
 The script initializes Kohya submodules and filters the editable `./sd-scripts` requirement, then installs `sd-scripts` dependencies separately.
 
+If Kohya install fails with:
+
+```text
+No matching distribution found for tensorflow==2.15.0.post1
+```
+
+rerun the updated bootstrap script. The project filters that pinned TensorFlow dependency because it is not available for Python 3.12 and is not required for the PyTorch FLUX LoRA path.
+
 ## Порядок Запуска Проекта
 
 1. Подготовить проект на RunPod:
