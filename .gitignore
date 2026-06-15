@@ -46,6 +46,8 @@ outputs/**/*.png
 outputs/**/*.jpg
 outputs/**/*.jpeg
 outputs/**/*.webp
+outputs/**/*.mp4
+outputs/temp/
 
 # Large model/checkpoint files anywhere in the repo.
 *.safetensors

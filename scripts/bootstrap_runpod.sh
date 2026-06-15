@@ -44,11 +44,13 @@ bash "$PROJECT_DIR/scripts/install_comfyui_custom_nodes.sh"
 python3 -m venv "$WORKSPACE_DIR/venv-kohya"
 source "$WORKSPACE_DIR/venv-kohya/bin/activate"
 pip install --upgrade pip wheel
+cd "$KOHYA_DIR"
 if [ -f "$KOHYA_DIR/requirements_linux.txt" ]; then
-  pip install -r "$KOHYA_DIR/requirements_linux.txt"
+  pip install -r requirements_linux.txt
 else
-  pip install -r "$KOHYA_DIR/requirements.txt"
+  pip install -r requirements.txt
 fi
+cd "$PROJECT_DIR"
 deactivate
 
 echo "Bootstrap complete."
