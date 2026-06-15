@@ -15,7 +15,8 @@ if [ ! -d "$TRAIN_DATASET_DIR" ] || [ -z "$(find "$TRAIN_DATASET_DIR" -maxdepth 
   exit 1
 fi
 
-source "$WORKSPACE_DIR/venv-kohya/bin/activate"
+KOHYA_VENV="${KOHYA_VENV:-$WORKSPACE_DIR/venv-kohya}"
+source "$KOHYA_VENV/bin/activate"
 cd "$KOHYA_DIR"
 
 export HF_HOME="$CACHE_DIR/huggingface"

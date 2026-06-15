@@ -20,8 +20,9 @@ mkdir -p "$COMFYUI_DIR/custom_nodes"
 rm -rf "$TARGET_DIR"
 cp -r "$SOURCE_DIR" "$TARGET_DIR"
 
-source "$WORKSPACE_DIR/venv-comfyui/bin/activate"
-python -m pip install transformers accelerate safetensors pillow torchvision -c "$PROJECT_DIR/constraints/comfyui-cu124.txt"
+COMFYUI_VENV="${COMFYUI_VENV:-$WORKSPACE_DIR/venv-comfyui}"
+source "$COMFYUI_VENV/bin/activate"
+python -m pip install transformers accelerate safetensors pillow -c "$PROJECT_DIR/constraints/comfyui-cu124.txt"
 python -m pip uninstall -y xformers || true
 
 echo "Installed local ComfyUI custom nodes:"

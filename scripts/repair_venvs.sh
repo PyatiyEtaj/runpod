@@ -21,6 +21,14 @@ if [ -d "$WORKSPACE_DIR/venv-comfyui" ]; then
   deactivate
 fi
 
+DATASET_VENV="${DATASET_VENV:-$WORKSPACE_DIR/venv-dataset}"
+if [ -d "$DATASET_VENV" ]; then
+  source "$DATASET_VENV/bin/activate"
+  python -m pip install "huggingface-hub>=1.5.0,<2.0" "rich>=13.8.0" "numpy<2.0.0" "pillow<12.0" "scipy<1.12" -c "$PROJECT_DIR/constraints/dataset-cu124.txt"
+  python -m pip check || true
+  deactivate
+fi
+
 if [ -d "$WORKSPACE_DIR/venv-kohya" ]; then
   source "$WORKSPACE_DIR/venv-kohya/bin/activate"
   python -m pip install "huggingface-hub>=0.28.1,<1.0" "rich>=13.8.0" "numpy<2.0.0" "pillow<12.0" "scipy<1.12" -c "$PROJECT_DIR/constraints/kohya-cu124.txt"

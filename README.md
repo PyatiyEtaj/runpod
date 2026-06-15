@@ -38,6 +38,7 @@ External applications are expected beside the project:
 /workspace/ComfyUI
 /workspace/kohya_ss
 /workspace/venv-comfyui
+/workspace/venv-dataset
 /workspace/venv-kohya
 ```
 
@@ -54,8 +55,7 @@ bash scripts/download_flux_dev.sh
 bash scripts/download_hf_models.sh
 ```
 
-`bootstrap_runpod.sh` clones ComfyUI and Kohya_ss and installs their Python dependencies.
-It also installs the local ComfyUI node pack from `comfyui/custom_nodes/ai_ver2_dataset_nodes`.
+`bootstrap_runpod.sh` clones ComfyUI and Kohya_ss and creates separate Python environments.
 `download_flux_dev.sh` downloads FLUX.1-dev, text encoders, VAE, and installs ComfyUI model paths.
 `download_hf_models.sh` downloads the selected dataset-pipeline models from Hugging Face.
 
@@ -140,21 +140,29 @@ models/joycaption/llama-joycaption-alpha-two-hf-llava/
 models/rmbg/RMBG-2.0/
 ```
 
-## Dataset ComfyUI Node
+## Dataset Processor
 
-The dataset pipeline uses a local project node:
+The dataset pipeline runs in a separate virtual environment:
 
 ```text
-AIVer2DatasetBuilder
+/workspace/venv-dataset
 ```
 
-It is installed by:
+This keeps JoyCaption/RMBG/transformers dependencies out of ComfyUI and Kohya.
+
+Create or rebuild the dataset environment with:
 
 ```bash
-bash scripts/install_comfyui_custom_nodes.sh
+bash scripts/setup_dataset_env.sh
 ```
 
-The node does the full dataset pass:
+Run the dataset processor with:
+
+```bash
+bash scripts/process_dataset.sh
+```
+
+It does the full dataset pass:
 
 - reads images from `datasets/raw`;
 - removes background with `briaai/RMBG-2.0` for 80% of images;
@@ -162,6 +170,20 @@ The node does the full dataset pass:
 - resizes/crops to `1024x1024`;
 - captions with `fancyfeast/llama-joycaption-alpha-two-hf-llava`;
 - writes `.png + .txt` pairs to `datasets/processed`.
+
+The same processing code is also available as a ComfyUI local custom node:
+
+```text
+AIVer2DatasetBuilder
+```
+
+That node is optional. Install it only if you explicitly want to run dataset processing inside ComfyUI:
+
+```bash
+bash scripts/install_comfyui_custom_nodes.sh
+```
+
+The recommended path is `bash scripts/process_dataset.sh`, because it keeps dataset dependencies separate from ComfyUI.
 
 Open this workflow:
 
@@ -192,15 +214,14 @@ Put source images into:
 datasets/raw/
 ```
 
-Start ComfyUI:
+Process the dataset:
 
 ```bash
 cd /workspace/ai-ver-2
-bash scripts/start_comfyui.sh
+bash scripts/process_dataset.sh
 ```
 
-Open RunPod port `8188`, load the workflow template, and process the images.
-Run the `AI Ver 2 Dataset Builder` node. It reads from `datasets/raw/` and writes into `datasets/processed/`.
+It reads from `datasets/raw/` and writes into `datasets/processed/`.
 
 Expected ComfyUI output:
 
@@ -283,6 +304,7 @@ This deletes only:
 
 ```text
 /workspace/venv-comfyui
+/workspace/venv-dataset
 /workspace/venv-kohya
 ```
 
@@ -292,6 +314,9 @@ For L40S with driver `12040`, keep this in `.env`:
 
 ```text
 PYTORCH_INDEX_URL=https://download.pytorch.org/whl/cu124
+TORCH_VERSION=2.6.0
+TORCHVISION_VERSION=0.21.0
+TORCHAUDIO_VERSION=2.6.0
 ```
 
 If ComfyUI fails with:
@@ -403,7 +428,7 @@ bash scripts/setup_project.sh
 bash scripts/bootstrap_runpod.sh
 ```
 
-`bootstrap_runpod.sh` does not reinstall dependencies if `/workspace/venv-comfyui` and `/workspace/venv-kohya` already exist. To intentionally rebuild both virtual environments:
+`bootstrap_runpod.sh` does not reinstall dependencies if `/workspace/venv-comfyui`, `/workspace/venv-dataset`, and `/workspace/venv-kohya` already exist. To intentionally rebuild all virtual environments:
 
 ```bash
 bash scripts/rebuild_venvs_clean.sh
@@ -416,28 +441,16 @@ bash scripts/download_flux_dev.sh
 bash scripts/download_hf_models.sh
 ```
 
-5. Запустить ComfyUI:
-
-```bash
-bash scripts/start_comfyui.sh
-```
-
-6. Открыть RunPod port `8188`, загрузить workflow:
-
-```text
-/workspace/ai-ver-2/workflows/comfyui/dataset_pipeline.json
-```
-
-7. Положить исходные изображения в:
+5. Положить исходные изображения в:
 
 ```text
 /workspace/ai-ver-2/datasets/raw/
 ```
 
-8. В ComfyUI запустить node:
+6. Обработать dataset:
 
-```text
-AI Ver 2 Dataset Builder
+```bash
+bash scripts/process_dataset.sh
 ```
 
 Он создаст обработанные изображения и captions в:
@@ -446,13 +459,13 @@ AI Ver 2 Dataset Builder
 /workspace/ai-ver-2/datasets/processed/
 ```
 
-9. Синхронизировать готовый dataset для Kohya:
+7. Синхронизировать готовый dataset для Kohya:
 
 ```bash
 bash scripts/prepare_dataset.sh
 ```
 
-10. Запустить обучение FLUX LoRA:
+8. Запустить обучение FLUX LoRA:
 
 ```bash
 bash scripts/train_flux_lora.sh
@@ -462,4 +475,10 @@ bash scripts/train_flux_lora.sh
 
 ```text
 /workspace/ai-ver-2/outputs/lora/
+```
+
+9. При необходимости запустить ComfyUI отдельно для проверки FLUX/generation:
+
+```bash
+bash scripts/start_comfyui.sh
 ```

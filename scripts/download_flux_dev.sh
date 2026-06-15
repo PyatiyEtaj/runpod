@@ -15,8 +15,13 @@ set +a
 
 mkdir -p "$FLUX_DIFFUSION_MODEL_DIR" "$FLUX_TEXT_ENCODER_DIR" "$FLUX_VAE_DIR" "$CACHE_DIR/huggingface"
 
-source "$WORKSPACE_DIR/venv-comfyui/bin/activate"
-python -m pip install "huggingface-hub>=1.5.0,<2.0" -c "$PROJECT_DIR/constraints/comfyui-cu124.txt"
+DATASET_VENV="${DATASET_VENV:-$WORKSPACE_DIR/venv-dataset}"
+if [ ! -d "$DATASET_VENV" ]; then
+  bash "$PROJECT_DIR/scripts/setup_dataset_env.sh"
+fi
+
+source "$DATASET_VENV/bin/activate"
+python -m pip install "huggingface-hub>=1.5.0,<2.0" -c "$PROJECT_DIR/constraints/dataset-cu124.txt"
 
 export HF_HOME="$CACHE_DIR/huggingface"
 

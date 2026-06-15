@@ -36,12 +36,17 @@ cd "$KOHYA_DIR"
 git submodule update --init --recursive
 cd "$PROJECT_DIR"
 
-if [ ! -d "$WORKSPACE_DIR/venv-comfyui" ] || [ ! -d "$WORKSPACE_DIR/venv-kohya" ] || [ "${CLEAN_REBUILD:-0}" = "1" ]; then
+COMFYUI_VENV="${COMFYUI_VENV:-$WORKSPACE_DIR/venv-comfyui}"
+DATASET_VENV="${DATASET_VENV:-$WORKSPACE_DIR/venv-dataset}"
+KOHYA_VENV="${KOHYA_VENV:-$WORKSPACE_DIR/venv-kohya}"
+
+if [ ! -d "$COMFYUI_VENV" ] || [ ! -d "$DATASET_VENV" ] || [ ! -d "$KOHYA_VENV" ] || [ "${CLEAN_REBUILD:-0}" = "1" ]; then
   bash "$PROJECT_DIR/scripts/rebuild_venvs_clean.sh"
 else
   echo "Project virtual environments already exist:"
-  echo "  $WORKSPACE_DIR/venv-comfyui"
-  echo "  $WORKSPACE_DIR/venv-kohya"
+  echo "  $COMFYUI_VENV"
+  echo "  $DATASET_VENV"
+  echo "  $KOHYA_VENV"
   echo
   echo "Skipping dependency install. To rebuild cleanly, run:"
   echo "  bash scripts/rebuild_venvs_clean.sh"
@@ -52,7 +57,7 @@ echo "Next model step:"
 echo "  scripts/download_flux_dev.sh"
 echo "  scripts/download_hf_models.sh"
 echo
-echo "Install ComfyUI custom nodes that support:"
-echo "  Local dataset node: AIVer2DatasetBuilder"
-echo "  JoyCaption model:   $JOYCAPTION_REPO"
-echo "  RMBG model:         $RMBG_REPO"
+echo "Runtime environments:"
+echo "  ComfyUI: $COMFYUI_VENV"
+echo "  Dataset: $DATASET_VENV"
+echo "  Kohya:   $KOHYA_VENV"
