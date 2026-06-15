@@ -69,7 +69,7 @@ elif [ -f "$KOHYA_DIR/sd-scripts/requirements_linux.txt" ]; then
   pip install -r "$SD_SCRIPTS_REQUIREMENTS"
 fi
 
-pip install --upgrade "huggingface-hub>=0.28.1" "rich>=13.8.0"
+pip install --upgrade "huggingface-hub>=0.28.1,<1.0" "rich>=13.8.0"
 cd "$PROJECT_DIR"
 deactivate
 

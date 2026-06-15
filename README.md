@@ -306,7 +306,7 @@ rerun the updated bootstrap script. The project skips editable installation of t
 If pip prints dependency conflicts for `huggingface-hub` or `rich`, rerun the updated bootstrap script. It finishes Kohya installation by upgrading:
 
 ```text
-huggingface-hub>=0.28.1
+huggingface-hub>=0.28.1,<1.0
 rich>=13.8.0
 ```
 
