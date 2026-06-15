@@ -40,6 +40,20 @@ def _resize_crop_pad(image, width, height):
     return image
 
 
+def _crop_region(image, crop_region):
+    image = ImageOps.exif_transpose(image).convert("RGBA")
+    crop_region = crop_region.lower().strip()
+
+    if crop_region == "full":
+        return image
+    if crop_region == "upper":
+        return image.crop((0, 0, image.width, image.height // 2))
+    if crop_region == "lower":
+        return image.crop((0, image.height // 2, image.width, image.height))
+
+    raise ValueError(f"Unsupported crop_region: {crop_region}. Use full, upper, or lower.")
+
+
 def _should_skip_background_removal(path, percent, seed):
     if percent <= 0:
         return False
@@ -71,6 +85,7 @@ class AIVer2DatasetBuilder:
                 }),
                 "width": ("INT", {"default": 1024, "min": 256, "max": 2048, "step": 64}),
                 "height": ("INT", {"default": 1024, "min": 256, "max": 2048, "step": 64}),
+                "crop_region": (["full", "upper", "lower"], {"default": "full"}),
                 "max_new_tokens": ("INT", {"default": 128, "min": 32, "max": 512, "step": 16}),
                 "skip_background_removal_percent": ("FLOAT", {"default": 20.0, "min": 0.0, "max": 100.0, "step": 1.0}),
                 "skip_background_removal_seed": ("INT", {"default": 42, "min": 0, "max": 2147483647, "step": 1}),
@@ -202,6 +217,7 @@ class AIVer2DatasetBuilder:
         caption_prompt,
         width,
         height,
+        crop_region,
         max_new_tokens,
         skip_background_removal_percent,
         skip_background_removal_seed,
@@ -234,6 +250,7 @@ class AIVer2DatasetBuilder:
                 continue
 
             image = Image.open(source)
+            image = _crop_region(image, crop_region)
             if _should_skip_background_removal(source, skip_background_removal_percent, skip_background_removal_seed):
                 image = ImageOps.exif_transpose(image).convert("RGBA")
                 background_kept += 1

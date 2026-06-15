@@ -163,6 +163,22 @@ Run the dataset processor with:
 bash scripts/process_dataset.sh
 ```
 
+Crop modes:
+
+```bash
+bash scripts/process_dataset.sh --crop-region full
+bash scripts/process_dataset.sh --crop-region upper
+bash scripts/process_dataset.sh --crop-region lower
+```
+
+Convenience wrappers:
+
+```bash
+bash scripts/process_dataset_full.sh
+bash scripts/process_dataset_upper.sh
+bash scripts/process_dataset_lower.sh
+```
+
 It does the full dataset pass:
 
 - reads images from `datasets/raw`;

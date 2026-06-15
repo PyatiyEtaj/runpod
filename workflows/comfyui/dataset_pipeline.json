@@ -25,7 +25,8 @@
     "resize": {
       "width": 1024,
       "height": 1024,
-      "mode": "crop_or_pad"
+      "mode": "crop_or_pad",
+      "crop_region": "full"
     },
     "skip_background_removal_percent": 20.0,
     "skip_background_removal_seed": 42,
@@ -45,6 +46,7 @@
         "caption_prompt": "Describe the subject accurately for FLUX LoRA training. Include visible clothing, style, pose, and important details. Do not mention removed background unless relevant.",
         "width": 1024,
         "height": 1024,
+        "crop_region": "full",
         "max_new_tokens": 128,
         "skip_background_removal_percent": 20.0,
         "skip_background_removal_seed": 42,
