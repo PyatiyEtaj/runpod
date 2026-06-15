@@ -1,0 +1,39 @@
+{
+  "name": "flux_dev_basic_generation_template",
+  "description": "Template workflow for testing FLUX.1-dev in ComfyUI. It assumes extra_model_paths.yaml is installed and FLUX files are in models/flux/diffusion_models, models/flux/text_encoders, and models/flux/vae.",
+  "version": 1,
+  "models": {
+    "diffusion_model": "flux1-dev.safetensors",
+    "clip_l": "clip_l.safetensors",
+    "t5xxl": "t5xxl_fp16.safetensors",
+    "vae": "ae.safetensors"
+  },
+  "required_comfyui_nodes": [
+    "UNETLoader or DiffusionModelLoader for FLUX",
+    "DualCLIPLoader or CLIPLoader pair for clip_l and t5xxl",
+    "VAELoader",
+    "CLIPTextEncodeFlux",
+    "BasicGuider",
+    "KSamplerSelect",
+    "RandomNoise",
+    "BasicScheduler",
+    "SamplerCustomAdvanced",
+    "VAEDecode",
+    "SaveImage"
+  ],
+  "notes": [
+    "This is a portable specification template, not a guaranteed queue-ready ComfyUI graph. Exact node class names vary by ComfyUI version.",
+    "In ComfyUI, select flux1-dev.safetensors from diffusion_models, clip_l.safetensors and t5xxl_fp16.safetensors from text_encoders, and ae.safetensors from vae."
+  ],
+  "default_prompt": "portrait photo of a person, clean lighting, detailed face, high quality",
+  "default_negative_prompt": "",
+  "settings": {
+    "width": 1024,
+    "height": 1024,
+    "steps": 25,
+    "cfg": 1.0,
+    "sampler": "euler",
+    "scheduler": "simple",
+    "seed": 42
+  }
+}

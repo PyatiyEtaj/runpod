@@ -1,0 +1,51 @@
+{
+  "name": "dataset_pipeline_template",
+  "description": "Dataset workflow using the local AI Ver 2 ComfyUI node pack. No placeholder replacement is needed after scripts/install_comfyui_custom_nodes.sh has been run.",
+  "version": 1,
+  "required_custom_nodes": [
+    "ComfyUI-Manager",
+    "ai_ver2_dataset_nodes"
+  ],
+  "models": {
+    "background_removal": {
+      "repo": "briaai/RMBG-2.0",
+      "local_dir": "/workspace/ai-ver-2/models/rmbg/RMBG-2.0"
+    },
+    "captioning": {
+      "repo": "fancyfeast/llama-joycaption-alpha-two-hf-llava",
+      "local_dir": "/workspace/ai-ver-2/models/joycaption/llama-joycaption-alpha-two-hf-llava"
+    }
+  },
+  "paths": {
+    "input": "/workspace/ai-ver-2/datasets/raw",
+    "image_output": "/workspace/ai-ver-2/datasets/processed",
+    "caption_output": "/workspace/ai-ver-2/datasets/processed"
+  },
+  "target": {
+    "resize": {
+      "width": 1024,
+      "height": 1024,
+      "mode": "crop_or_pad"
+    },
+    "caption_sidecar": true,
+    "caption_extension": ".txt"
+  },
+  "nodes": [
+    {
+      "id": "dataset_builder",
+      "type": "AIVer2DatasetBuilder",
+      "display_name": "AI Ver 2 Dataset Builder",
+      "inputs": {
+        "input_dir": "/workspace/ai-ver-2/datasets/raw",
+        "output_dir": "/workspace/ai-ver-2/datasets/processed",
+        "rmbg_model_dir": "/workspace/ai-ver-2/models/rmbg/RMBG-2.0",
+        "joycaption_model_dir": "/workspace/ai-ver-2/models/joycaption/llama-joycaption-alpha-two-hf-llava",
+        "caption_prompt": "Describe the subject accurately for FLUX LoRA training. Include visible clothing, style, pose, and important details. Do not mention removed background unless relevant.",
+        "width": 1024,
+        "height": 1024,
+        "max_new_tokens": 128,
+        "overwrite": false
+      }
+    }
+  ]
+}

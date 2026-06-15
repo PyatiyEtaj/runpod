@@ -1,0 +1,62 @@
+# FLUX.1-dev LoRA training config for kohya_ss / sd-scripts.
+# Paths assume RunPod persistent storage and this repository at /workspace/ai-ver-2.
+
+output_dir = "/workspace/ai-ver-2/outputs/lora"
+output_name = "flux_subject_lora"
+logging_dir = "/workspace/ai-ver-2/outputs/logs"
+
+train_data_dir = "/workspace/ai-ver-2/datasets/flux_lora"
+caption_extension = ".txt"
+shuffle_caption = true
+keep_tokens = 1
+
+resolution = "1024,1024"
+enable_bucket = true
+bucket_no_upscale = true
+min_bucket_reso = 512
+max_bucket_reso = 1536
+
+train_batch_size = 1
+gradient_accumulation_steps = 4
+max_train_epochs = 10
+save_every_n_epochs = 1
+save_model_as = "safetensors"
+save_precision = "bf16"
+mixed_precision = "bf16"
+
+network_module = "networks.lora_flux"
+network_dim = 32
+network_alpha = 32
+network_dropout = 0.0
+
+optimizer_type = "adamw8bit"
+learning_rate = 0.0001
+unet_lr = 0.0001
+text_encoder_lr = 0.00001
+lr_scheduler = "cosine"
+lr_warmup_steps = 100
+
+seed = 42
+max_data_loader_n_workers = 4
+persistent_data_loader_workers = true
+
+cache_latents = true
+cache_latents_to_disk = true
+cache_text_encoder_outputs = true
+cache_text_encoder_outputs_to_disk = true
+
+gradient_checkpointing = true
+sdpa = true
+full_bf16 = true
+
+# Set these to your actual FLUX.1-dev model files after downloading.
+# Common layouts vary by kohya_ss/sd-scripts version, so verify argument names
+# against the installed flux_train_network.py if training fails.
+pretrained_model_name_or_path = "/workspace/ai-ver-2/models/flux/diffusion_models/flux1-dev.safetensors"
+clip_l = "/workspace/ai-ver-2/models/flux/text_encoders/clip_l.safetensors"
+t5xxl = "/workspace/ai-ver-2/models/flux/text_encoders/t5xxl_fp16.safetensors"
+ae = "/workspace/ai-ver-2/models/flux/vae/ae.safetensors"
+
+sample_prompts = "/workspace/ai-ver-2/configs/kohya/sample_prompts.txt"
+sample_every_n_epochs = 1
+sample_sampler = "euler"

@@ -1,0 +1,208 @@
+import os
+from pathlib import Path
+
+import numpy as np
+import torch
+from PIL import Image, ImageOps
+
+
+IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
+
+
+def _image_to_tensor(image):
+    array = np.asarray(image).astype(np.float32) / 255.0
+    return torch.from_numpy(array)[None,]
+
+
+def _resize_crop_pad(image, width, height):
+    image = ImageOps.exif_transpose(image).convert("RGBA")
+    source_ratio = image.width / image.height
+    target_ratio = width / height
+
+    if source_ratio > target_ratio:
+        new_height = height
+        new_width = round(height * source_ratio)
+    else:
+        new_width = width
+        new_height = round(width / source_ratio)
+
+    image = image.resize((new_width, new_height), Image.Resampling.LANCZOS)
+    left = max(0, (new_width - width) // 2)
+    top = max(0, (new_height - height) // 2)
+    image = image.crop((left, top, left + width, top + height))
+
+    if image.size != (width, height):
+        canvas = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+        canvas.alpha_composite(image, ((width - image.width) // 2, (height - image.height) // 2))
+        image = canvas
+
+    return image
+
+
+class AIVer2DatasetBuilder:
+    _rmbg_model = None
+    _joy_model = None
+    _joy_processor = None
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "input_dir": ("STRING", {"default": "/workspace/ai-ver-2/datasets/raw"}),
+                "output_dir": ("STRING", {"default": "/workspace/ai-ver-2/datasets/processed"}),
+                "rmbg_model_dir": ("STRING", {"default": "/workspace/ai-ver-2/models/rmbg/RMBG-2.0"}),
+                "joycaption_model_dir": ("STRING", {"default": "/workspace/ai-ver-2/models/joycaption/llama-joycaption-alpha-two-hf-llava"}),
+                "caption_prompt": ("STRING", {
+                    "multiline": True,
+                    "default": "Describe the subject accurately for FLUX LoRA training. Include visible clothing, style, pose, and important details. Do not mention removed background unless relevant.",
+                }),
+                "width": ("INT", {"default": 1024, "min": 256, "max": 2048, "step": 64}),
+                "height": ("INT", {"default": 1024, "min": 256, "max": 2048, "step": 64}),
+                "max_new_tokens": ("INT", {"default": 128, "min": 32, "max": 512, "step": 16}),
+                "overwrite": ("BOOLEAN", {"default": False}),
+            }
+        }
+
+    RETURN_TYPES = ("STRING",)
+    RETURN_NAMES = ("summary",)
+    FUNCTION = "build_dataset"
+    CATEGORY = "ai-ver-2/dataset"
+
+    def _load_rmbg(self, model_dir, device):
+        if self.__class__._rmbg_model is None:
+            from transformers import AutoModelForImageSegmentation
+
+            model = AutoModelForImageSegmentation.from_pretrained(model_dir, trust_remote_code=True)
+            model.to(device)
+            model.eval()
+            self.__class__._rmbg_model = model
+        return self.__class__._rmbg_model
+
+    def _load_joycaption(self, model_dir, device):
+        if self.__class__._joy_model is None or self.__class__._joy_processor is None:
+            from transformers import AutoModelForVision2Seq, AutoProcessor
+
+            processor = AutoProcessor.from_pretrained(model_dir, trust_remote_code=True)
+            model = AutoModelForVision2Seq.from_pretrained(
+                model_dir,
+                trust_remote_code=True,
+                torch_dtype=torch.bfloat16 if device == "cuda" else torch.float32,
+                device_map="auto" if device == "cuda" else None,
+            )
+            if device != "cuda":
+                model.to(device)
+            model.eval()
+            self.__class__._joy_processor = processor
+            self.__class__._joy_model = model
+        return self.__class__._joy_processor, self.__class__._joy_model
+
+    def _remove_background(self, image, model_dir, device):
+        from torchvision import transforms
+
+        rgb = ImageOps.exif_transpose(image).convert("RGB")
+        model = self._load_rmbg(model_dir, device)
+
+        transform = transforms.Compose(
+            [
+                transforms.Resize((1024, 1024), interpolation=transforms.InterpolationMode.BILINEAR),
+                transforms.ToTensor(),
+                transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+            ]
+        )
+
+        tensor = transform(rgb).unsqueeze(0).to(device)
+        with torch.inference_mode():
+            pred = model(tensor)[-1].sigmoid().cpu()
+
+        mask = pred[0].squeeze()
+        mask = (mask - mask.min()) / (mask.max() - mask.min()).clamp(min=1e-6)
+        mask_image = transforms.ToPILImage()(mask).resize(rgb.size, Image.Resampling.LANCZOS)
+
+        rgba = rgb.convert("RGBA")
+        rgba.putalpha(mask_image)
+        return rgba
+
+    def _caption(self, image, model_dir, prompt, max_new_tokens, device):
+        processor, model = self._load_joycaption(model_dir, device)
+        rgb = image.convert("RGB")
+
+        if hasattr(processor, "apply_chat_template"):
+            messages = [
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "image"},
+                        {"type": "text", "text": prompt},
+                    ],
+                }
+            ]
+            text = processor.apply_chat_template(messages, add_generation_prompt=True)
+        else:
+            text = prompt
+
+        inputs = processor(images=rgb, text=text, return_tensors="pt")
+        inputs = {key: value.to(model.device) if hasattr(value, "to") else value for key, value in inputs.items()}
+
+        with torch.inference_mode():
+            output_ids = model.generate(**inputs, max_new_tokens=max_new_tokens, do_sample=False)
+
+        caption = processor.decode(output_ids[0], skip_special_tokens=True).strip()
+        if prompt in caption:
+            caption = caption.split(prompt, 1)[-1].strip()
+        return " ".join(caption.split())
+
+    def build_dataset(
+        self,
+        input_dir,
+        output_dir,
+        rmbg_model_dir,
+        joycaption_model_dir,
+        caption_prompt,
+        width,
+        height,
+        max_new_tokens,
+        overwrite,
+    ):
+        input_path = Path(input_dir)
+        output_path = Path(output_dir)
+        output_path.mkdir(parents=True, exist_ok=True)
+
+        if not input_path.exists():
+            raise FileNotFoundError(f"Input directory does not exist: {input_path}")
+
+        images = sorted(path for path in input_path.iterdir() if path.suffix.lower() in IMAGE_EXTENSIONS)
+        if not images:
+            return (f"No images found in {input_path}",)
+
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        processed = 0
+        skipped = 0
+
+        for source in images:
+            stem = source.stem
+            image_out = output_path / f"{stem}.png"
+            caption_out = output_path / f"{stem}.txt"
+
+            if not overwrite and image_out.exists() and caption_out.exists():
+                skipped += 1
+                continue
+
+            image = Image.open(source)
+            image = self._remove_background(image, rmbg_model_dir, device)
+            image = _resize_crop_pad(image, width, height)
+            caption = self._caption(image, joycaption_model_dir, caption_prompt, max_new_tokens, device)
+
+            image.save(image_out)
+            caption_out.write_text(caption + "\n", encoding="utf-8")
+            processed += 1
+
+        return (f"Processed {processed} images, skipped {skipped}. Output: {output_path}",)
+
+
+NODE_CLASS_MAPPINGS = {
+    "AIVer2DatasetBuilder": AIVer2DatasetBuilder,
+}
+
+NODE_DISPLAY_NAME_MAPPINGS = {
+    "AIVer2DatasetBuilder": "AI Ver 2 Dataset Builder",
+}

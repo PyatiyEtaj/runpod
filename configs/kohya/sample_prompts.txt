@@ -1,0 +1,2 @@
+subject_token, portrait photo, clean lighting, detailed face
+subject_token, full body photo, neutral background, high detail

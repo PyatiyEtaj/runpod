@@ -1,0 +1,8 @@
+ai-ver-2:
+  base_path: /workspace/ai-ver-2/models
+  diffusion_models: flux/diffusion_models
+  unet: flux/diffusion_models
+  text_encoders: flux/text_encoders
+  clip: flux/text_encoders
+  vae: flux/vae
+  loras: ../outputs/lora
