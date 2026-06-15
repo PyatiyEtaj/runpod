@@ -32,6 +32,10 @@ if [ ! -d "$KOHYA_DIR" ]; then
   git clone https://github.com/bmaltais/kohya_ss.git "$KOHYA_DIR"
 fi
 
+cd "$KOHYA_DIR"
+git submodule update --init --recursive
+cd "$PROJECT_DIR"
+
 python3 -m venv "$WORKSPACE_DIR/venv-comfyui"
 source "$WORKSPACE_DIR/venv-comfyui/bin/activate"
 pip install --upgrade pip wheel
@@ -46,9 +50,19 @@ source "$WORKSPACE_DIR/venv-kohya/bin/activate"
 pip install --upgrade pip wheel
 cd "$KOHYA_DIR"
 if [ -f "$KOHYA_DIR/requirements_linux.txt" ]; then
-  pip install -r requirements_linux.txt
+  KOHYA_REQUIREMENTS=requirements_linux.txt
 else
-  pip install -r requirements.txt
+  KOHYA_REQUIREMENTS=requirements.txt
+fi
+
+FILTERED_REQUIREMENTS="$CACHE_DIR/kohya_requirements.filtered.txt"
+grep -vE 'sd-scripts' "$KOHYA_REQUIREMENTS" > "$FILTERED_REQUIREMENTS"
+pip install -r "$FILTERED_REQUIREMENTS"
+
+if [ -f "$KOHYA_DIR/sd-scripts/requirements.txt" ]; then
+  pip install -r "$KOHYA_DIR/sd-scripts/requirements.txt"
+elif [ -f "$KOHYA_DIR/sd-scripts/requirements_linux.txt" ]; then
+  pip install -r "$KOHYA_DIR/sd-scripts/requirements_linux.txt"
 fi
 cd "$PROJECT_DIR"
 deactivate

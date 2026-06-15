@@ -270,6 +270,23 @@ If VRAM is tight, reduce `network_dim` to `16` or disable sampling during traini
 - Clean `cache/` when storage gets tight.
 - Do not commit model files or datasets; `.gitignore` excludes them.
 
+## Troubleshooting
+
+If Kohya install fails with:
+
+```text
+sd-scripts does not appear to be a Python project
+```
+
+rerun the updated bootstrap script:
+
+```bash
+cd /workspace/ai-ver-2
+bash scripts/bootstrap_runpod.sh
+```
+
+The script initializes Kohya submodules and filters the editable `./sd-scripts` requirement, then installs `sd-scripts` dependencies separately.
+
 ## Порядок Запуска Проекта
 
 1. Подготовить проект на RunPod:
