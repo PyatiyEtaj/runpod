@@ -310,6 +310,14 @@ huggingface-hub>=0.28.1,<1.0
 rich>=13.8.0
 ```
 
+For the ComfyUI environment only, run:
+
+```bash
+source /workspace/venv-comfyui/bin/activate
+pip install --upgrade "huggingface-hub>=0.28.1,<1.0" "rich>=13.8.0"
+deactivate
+```
+
 ## Порядок Запуска Проекта
 
 1. Подготовить проект на RunPod:

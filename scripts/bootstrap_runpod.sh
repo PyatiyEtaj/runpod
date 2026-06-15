@@ -40,7 +40,7 @@ python3 -m venv "$WORKSPACE_DIR/venv-comfyui"
 source "$WORKSPACE_DIR/venv-comfyui/bin/activate"
 pip install --upgrade pip wheel
 pip install -r "$COMFYUI_DIR/requirements.txt"
-pip install --upgrade huggingface_hub
+pip install --upgrade "huggingface_hub>=0.28.1,<1.0"
 deactivate
 
 bash "$PROJECT_DIR/scripts/install_comfyui_custom_nodes.sh"

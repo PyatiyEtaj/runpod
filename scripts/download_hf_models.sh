@@ -16,7 +16,7 @@ set +a
 mkdir -p "$JOYCAPTION_MODEL_DIR" "$RMBG_MODEL_DIR" "$CACHE_DIR/huggingface"
 
 source "$WORKSPACE_DIR/venv-comfyui/bin/activate"
-pip install --upgrade huggingface_hub
+pip install --upgrade "huggingface_hub>=0.28.1,<1.0"
 
 export HF_HOME="$CACHE_DIR/huggingface"
 
@@ -25,12 +25,12 @@ if [ -n "${HF_TOKEN:-}" ]; then
   HF_ARGS+=(--token "$HF_TOKEN")
 fi
 
-huggingface-cli download "$JOYCAPTION_REPO" \
+hf download "$JOYCAPTION_REPO" \
   --local-dir "$JOYCAPTION_MODEL_DIR" \
   --local-dir-use-symlinks False \
   "${HF_ARGS[@]}"
 
-huggingface-cli download "$RMBG_REPO" \
+hf download "$RMBG_REPO" \
   --local-dir "$RMBG_MODEL_DIR" \
   --local-dir-use-symlinks False \
   "${HF_ARGS[@]}"

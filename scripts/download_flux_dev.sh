@@ -16,7 +16,7 @@ set +a
 mkdir -p "$FLUX_DIFFUSION_MODEL_DIR" "$FLUX_TEXT_ENCODER_DIR" "$FLUX_VAE_DIR" "$CACHE_DIR/huggingface"
 
 source "$WORKSPACE_DIR/venv-comfyui/bin/activate"
-pip install --upgrade huggingface_hub
+pip install --upgrade "huggingface_hub>=0.28.1,<1.0"
 
 export HF_HOME="$CACHE_DIR/huggingface"
 
@@ -25,22 +25,22 @@ if [ -n "${HF_TOKEN:-}" ]; then
   HF_ARGS+=(--token "$HF_TOKEN")
 fi
 
-huggingface-cli download "$FLUX_DEV_REPO" "$FLUX_DEV_FILE" \
+hf download "$FLUX_DEV_REPO" "$FLUX_DEV_FILE" \
   --local-dir "$FLUX_DIFFUSION_MODEL_DIR" \
   --local-dir-use-symlinks False \
   "${HF_ARGS[@]}"
 
-huggingface-cli download "$FLUX_DEV_REPO" "$FLUX_AE_FILE" \
+hf download "$FLUX_DEV_REPO" "$FLUX_AE_FILE" \
   --local-dir "$FLUX_VAE_DIR" \
   --local-dir-use-symlinks False \
   "${HF_ARGS[@]}"
 
-huggingface-cli download "$FLUX_TEXT_ENCODERS_REPO" "$FLUX_CLIP_L_FILE" \
+hf download "$FLUX_TEXT_ENCODERS_REPO" "$FLUX_CLIP_L_FILE" \
   --local-dir "$FLUX_TEXT_ENCODER_DIR" \
   --local-dir-use-symlinks False \
   "${HF_ARGS[@]}"
 
-huggingface-cli download "$FLUX_TEXT_ENCODERS_REPO" "$FLUX_T5XXL_FILE" \
+hf download "$FLUX_TEXT_ENCODERS_REPO" "$FLUX_T5XXL_FILE" \
   --local-dir "$FLUX_TEXT_ENCODER_DIR" \
   --local-dir-use-symlinks False \
   "${HF_ARGS[@]}"
