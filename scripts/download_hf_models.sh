@@ -27,12 +27,10 @@ fi
 
 hf download "$JOYCAPTION_REPO" \
   --local-dir "$JOYCAPTION_MODEL_DIR" \
-  --local-dir-use-symlinks False \
   "${HF_ARGS[@]}"
 
 hf download "$RMBG_REPO" \
   --local-dir "$RMBG_MODEL_DIR" \
-  --local-dir-use-symlinks False \
   "${HF_ARGS[@]}"
 
 echo "Downloaded:"

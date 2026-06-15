@@ -27,22 +27,18 @@ fi
 
 hf download "$FLUX_DEV_REPO" "$FLUX_DEV_FILE" \
   --local-dir "$FLUX_DIFFUSION_MODEL_DIR" \
-  --local-dir-use-symlinks False \
   "${HF_ARGS[@]}"
 
 hf download "$FLUX_DEV_REPO" "$FLUX_AE_FILE" \
   --local-dir "$FLUX_VAE_DIR" \
-  --local-dir-use-symlinks False \
   "${HF_ARGS[@]}"
 
 hf download "$FLUX_TEXT_ENCODERS_REPO" "$FLUX_CLIP_L_FILE" \
   --local-dir "$FLUX_TEXT_ENCODER_DIR" \
-  --local-dir-use-symlinks False \
   "${HF_ARGS[@]}"
 
 hf download "$FLUX_TEXT_ENCODERS_REPO" "$FLUX_T5XXL_FILE" \
   --local-dir "$FLUX_TEXT_ENCODER_DIR" \
-  --local-dir-use-symlinks False \
   "${HF_ARGS[@]}"
 
 bash "$PROJECT_DIR/scripts/install_comfyui_model_paths.sh"
