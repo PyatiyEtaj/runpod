@@ -319,6 +319,14 @@ TORCHVISION_VERSION=0.21.0
 TORCHAUDIO_VERSION=2.6.0
 ```
 
+If dataset processing fails on RMBG with:
+
+```text
+Should have a `model_type` key in its config.json
+```
+
+update the project and rerun processing. `briaai/RMBG-2.0` has a config without `model_type`; the processor falls back from the local directory to `RMBG_REPO=briaai/RMBG-2.0` using `HF_TOKEN`.
+
 If ComfyUI fails with:
 
 ```text

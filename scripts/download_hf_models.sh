@@ -41,3 +41,12 @@ hf download "$RMBG_REPO" \
 echo "Downloaded:"
 echo "  JoyCaption: $JOYCAPTION_MODEL_DIR"
 echo "  RMBG-2.0:   $RMBG_MODEL_DIR"
+
+if [ ! -f "$RMBG_MODEL_DIR/birefnet.py" ] || [ ! -f "$RMBG_MODEL_DIR/BiRefNet_config.py" ]; then
+  echo
+  echo "Warning: RMBG local directory is missing custom-code files."
+  echo "Expected:"
+  echo "  $RMBG_MODEL_DIR/birefnet.py"
+  echo "  $RMBG_MODEL_DIR/BiRefNet_config.py"
+  echo "The dataset processor can fall back to RMBG_REPO=$RMBG_REPO if HF_TOKEN is set."
+fi

@@ -87,7 +87,18 @@ class AIVer2DatasetBuilder:
         if self.__class__._rmbg_model is None:
             from transformers import AutoModelForImageSegmentation
 
-            model = AutoModelForImageSegmentation.from_pretrained(model_dir, trust_remote_code=True)
+            try:
+                model = AutoModelForImageSegmentation.from_pretrained(model_dir, trust_remote_code=True)
+            except ValueError as exc:
+                if "model_type" not in str(exc):
+                    raise
+                repo_id = os.environ.get("RMBG_REPO", "briaai/RMBG-2.0")
+                token = os.environ.get("HF_TOKEN") or None
+                model = AutoModelForImageSegmentation.from_pretrained(
+                    repo_id,
+                    trust_remote_code=True,
+                    token=token,
+                )
             model.to(device)
             model.eval()
             self.__class__._rmbg_model = model
