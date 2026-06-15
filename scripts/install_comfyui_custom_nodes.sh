@@ -22,7 +22,7 @@ cp -r "$SOURCE_DIR" "$TARGET_DIR"
 
 source "$WORKSPACE_DIR/venv-comfyui/bin/activate"
 pip install --upgrade transformers accelerate safetensors pillow torchvision
-pip install --upgrade "huggingface-hub>=0.28.1,<1.0" "rich>=13.8.0"
+python -m pip install --upgrade --force-reinstall "huggingface-hub>=1.5.0,<2.0" "rich>=13.8.0"
 
 echo "Installed local ComfyUI custom nodes:"
 echo "  $TARGET_DIR"

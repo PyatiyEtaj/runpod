@@ -303,10 +303,19 @@ Multiple top-level packages discovered in a flat-layout
 
 rerun the updated bootstrap script. The project skips editable installation of the Kohya repository root and runs Kohya scripts directly from `/workspace/kohya_ss`.
 
-If pip prints dependency conflicts for `huggingface-hub` or `rich`, rerun the updated bootstrap script. It finishes Kohya installation by upgrading:
+If pip prints dependency conflicts for `huggingface-hub` or `rich`, rerun the updated bootstrap script.
+
+Kohya currently uses older `transformers`, so `venv-kohya` is kept on:
 
 ```text
 huggingface-hub>=0.28.1,<1.0
+rich>=13.8.0
+```
+
+ComfyUI/JoyCaption may use newer `transformers`, so `venv-comfyui` is kept on:
+
+```text
+huggingface-hub>=1.5.0,<2.0
 rich>=13.8.0
 ```
 
@@ -314,8 +323,14 @@ For the ComfyUI environment only, run:
 
 ```bash
 source /workspace/venv-comfyui/bin/activate
-pip install --upgrade "huggingface-hub>=0.28.1,<1.0" "rich>=13.8.0"
+python -m pip install --upgrade --force-reinstall "huggingface-hub>=1.5.0,<2.0" "rich>=13.8.0"
 deactivate
+```
+
+Or repair both project virtual environments:
+
+```bash
+bash scripts/repair_venvs.sh
 ```
 
 ## Порядок Запуска Проекта

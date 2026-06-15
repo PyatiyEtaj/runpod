@@ -40,7 +40,7 @@ python3 -m venv "$WORKSPACE_DIR/venv-comfyui"
 source "$WORKSPACE_DIR/venv-comfyui/bin/activate"
 pip install --upgrade pip wheel
 pip install -r "$COMFYUI_DIR/requirements.txt"
-pip install --upgrade "huggingface_hub>=0.28.1,<1.0"
+python -m pip install --upgrade --force-reinstall "huggingface-hub>=1.5.0,<2.0"
 deactivate
 
 bash "$PROJECT_DIR/scripts/install_comfyui_custom_nodes.sh"
@@ -69,7 +69,7 @@ elif [ -f "$KOHYA_DIR/sd-scripts/requirements_linux.txt" ]; then
   pip install -r "$SD_SCRIPTS_REQUIREMENTS"
 fi
 
-pip install --upgrade "huggingface-hub>=0.28.1,<1.0" "rich>=13.8.0"
+python -m pip install --upgrade "huggingface-hub>=0.28.1,<1.0" "rich>=13.8.0"
 cd "$PROJECT_DIR"
 deactivate
 
