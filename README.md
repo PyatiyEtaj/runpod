@@ -396,11 +396,18 @@ huggingface-hub>=0.28.1,<1.0
 rich>=13.8.0
 ```
 
-ComfyUI/JoyCaption may use newer `transformers`, so `venv-comfyui` is kept on:
+ComfyUI may use newer `transformers`, so `venv-comfyui` is kept on:
 
 ```text
 huggingface-hub>=1.5.0,<2.0
 rich>=13.8.0
+```
+
+Dataset/JoyCaption uses `transformers 4.x`, so `venv-dataset` is kept on:
+
+```text
+huggingface-hub>=0.28.1,<1.0
+transformers>=4.45,<5.0
 ```
 
 For minor dependency drift, repair both project virtual environments:
