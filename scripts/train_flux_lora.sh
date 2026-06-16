@@ -18,6 +18,10 @@ fi
 KOHYA_VENV="${KOHYA_VENV:-$WORKSPACE_DIR/venv-kohya}"
 source "$KOHYA_VENV/bin/activate"
 
+# Keep Kohya isolated from dataset download settings. This venv intentionally
+# does not require hf_transfer because sd-scripts currently needs old hub APIs.
+export HF_HUB_ENABLE_HF_TRANSFER=0
+
 if ! python - <<'PY'
 from huggingface_hub import cached_download  # noqa: F401
 PY
