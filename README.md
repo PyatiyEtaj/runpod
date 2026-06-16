@@ -339,7 +339,7 @@ The default config is conservative for 32 GB VRAM:
 - `network_dim = 32`
 - `mixed_precision = "bf16"`
 - `cache_latents = true`
-- `cache_text_encoder_outputs = true`
+- `cache_text_encoder_outputs = false`
 - `gradient_checkpointing = true`
 
 If VRAM is tight, reduce `network_dim` to `16` or disable sampling during training.
@@ -553,7 +553,20 @@ bash scripts/train_flux_lora.sh
 /workspace/ai-ver-2/outputs/lora/
 ```
 
-9. При необходимости запустить ComfyUI отдельно для проверки FLUX/generation:
+9. Перед проверкой LoRA в ComfyUI установить или обновить пути моделей:
+
+```bash
+bash scripts/install_comfyui_model_paths.sh
+```
+
+Этот шаг подключает к ComfyUI:
+
+```text
+/workspace/ai-ver-2/models/flux/
+/workspace/ai-ver-2/outputs/lora/
+```
+
+10. Запустить ComfyUI для проверки FLUX/generation:
 
 ```bash
 bash scripts/start_comfyui.sh

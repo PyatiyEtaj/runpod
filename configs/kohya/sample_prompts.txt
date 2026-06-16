@@ -1,2 +1,2 @@
-subject_token, portrait photo, clean lighting, detailed face
-subject_token, full body photo, neutral background, high detail
+xyntaelena, portrait photo, clean lighting, detailed face --w 1024 --h 1024 --s 28 --l 3.5 --d 42
+xyntaelena, full body photo, neutral background, high detail --w 1024 --h 1024 --s 28 --l 3.5 --d 43

@@ -16,4 +16,8 @@ if [ ! -f "$COMFYUI_DIR/extra_model_paths.yaml" ]; then
   bash "$PROJECT_DIR/scripts/install_comfyui_model_paths.sh"
 fi
 
-python main.py --listen 0.0.0.0 --port 8188 --output-directory "$PROCESSED_DATASET_DIR"
+python main.py \
+  --listen 0.0.0.0 \
+  --port 8188 \
+  --enable-cors-header "*" \
+  --output-directory "$PROCESSED_DATASET_DIR"
