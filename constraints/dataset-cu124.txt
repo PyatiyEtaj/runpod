@@ -10,4 +10,5 @@ accelerate>=1.0
 safetensors>=0.4
 kornia>=0.7,<0.9
 opencv-python-headless>=4.8,<5.0
+basicsr>=1.4.2,<1.5.0
 realesrgan>=0.3.0,<0.4.0

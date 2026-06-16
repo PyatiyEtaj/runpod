@@ -564,5 +564,5 @@ fix dataset-venv
 source /workspace/venv-dataset/bin/activate
 cd /workspace/ai-ver-2
 
-python -m pip install "opencv-python-headless>=4.8,<5.0" "realesrgan>=0.3.0,<0.4.0" -c constraints/dataset-cu124.txt
+python -m pip install "opencv-python-headless>=4.8,<5.0" "basicsr>=1.4.2,<1.5.0" "realesrgan>=0.3.0,<0.4.0" -c constraints/dataset-cu124.txt
 ```
