@@ -78,6 +78,8 @@ class AIVer2DatasetBuilder:
     _rmbg_model = None
     _joy_model = None
     _joy_processor = None
+    _realesrgan_model_path = None
+    _realesrgan_upsampler = None
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -96,6 +98,9 @@ class AIVer2DatasetBuilder:
                 "crop_region": (["full", "upper", "lower"], {"default": "full"}),
                 "resize_mode": (["contain", "cover"], {"default": "contain"}),
                 "enable_resize_crop": ("BOOLEAN", {"default": True}),
+                "upscale_mode": (["none", "realesrgan_x4plus"], {"default": "none"}),
+                "realesrgan_model_path": ("STRING", {"default": "/workspace/ai-ver-2/models/upscaler/RealESRGAN_x4plus.pth"}),
+                "upscale_outscale": ("FLOAT", {"default": 4.0, "min": 1.0, "max": 4.0, "step": 0.25}),
                 "output_prefix": ("STRING", {"default": ""}),
                 "max_new_tokens": ("INT", {"default": 128, "min": 32, "max": 512, "step": 16}),
                 "skip_background_removal_percent": ("FLOAT", {"default": 20.0, "min": 0.0, "max": 100.0, "step": 1.0}),
@@ -174,6 +179,57 @@ class AIVer2DatasetBuilder:
         rgba.putalpha(mask_image)
         return rgba
 
+    def _load_realesrgan(self, model_path, device):
+        model_path = str(model_path)
+        if not Path(model_path).is_file():
+            raise FileNotFoundError(f"RealESRGAN_x4plus model not found: {model_path}")
+
+        if self.__class__._realesrgan_upsampler is not None and self.__class__._realesrgan_model_path == model_path:
+            return self.__class__._realesrgan_upsampler
+
+        import sys
+        import types
+
+        if "torchvision.transforms.functional_tensor" not in sys.modules:
+            from torchvision.transforms.functional import rgb_to_grayscale
+
+            functional_tensor = types.ModuleType("torchvision.transforms.functional_tensor")
+            functional_tensor.rgb_to_grayscale = rgb_to_grayscale
+            sys.modules["torchvision.transforms.functional_tensor"] = functional_tensor
+
+        from basicsr.archs.rrdbnet_arch import RRDBNet
+        from realesrgan import RealESRGANer
+
+        model = RRDBNet(num_in_ch=3, num_out_ch=3, num_feat=64, num_block=23, num_grow_ch=32, scale=4)
+        upsampler = RealESRGANer(
+            scale=4,
+            model_path=model_path,
+            model=model,
+            tile=0,
+            tile_pad=10,
+            pre_pad=0,
+            half=device == "cuda",
+            gpu_id=0 if device == "cuda" else None,
+        )
+        self.__class__._realesrgan_model_path = model_path
+        self.__class__._realesrgan_upsampler = upsampler
+        return upsampler
+
+    def _upscale_realesrgan(self, image, model_path, outscale, device):
+        upsampler = self._load_realesrgan(model_path, device)
+        rgba = ImageOps.exif_transpose(image).convert("RGBA")
+        bgr = np.asarray(rgba.convert("RGB"))[:, :, ::-1]
+        output_bgr, _ = upsampler.enhance(bgr, outscale=outscale)
+        output_rgb = output_bgr[:, :, ::-1]
+
+        alpha = rgba.getchannel("A")
+        alpha_size = (output_rgb.shape[1], output_rgb.shape[0])
+        alpha = alpha.resize(alpha_size, Image.Resampling.LANCZOS)
+
+        output = Image.fromarray(output_rgb).convert("RGBA")
+        output.putalpha(alpha)
+        return output
+
     def _caption(self, image, model_dir, prompt, max_new_tokens, device):
         processor, model = self._load_joycaption(model_dir, device)
         rgb = image.convert("RGB")
@@ -231,6 +287,9 @@ class AIVer2DatasetBuilder:
         crop_region,
         resize_mode,
         enable_resize_crop,
+        upscale_mode,
+        realesrgan_model_path,
+        upscale_outscale,
         output_prefix,
         max_new_tokens,
         skip_background_removal_percent,
@@ -253,6 +312,7 @@ class AIVer2DatasetBuilder:
         skipped = 0
         background_removed = 0
         background_kept = 0
+        upscaled = 0
         output_prefix = str(output_prefix or "")
 
         for source in images:
@@ -277,6 +337,12 @@ class AIVer2DatasetBuilder:
                 image = self._remove_background(image, rmbg_model_dir, device)
                 background_removed += 1
 
+            if upscale_mode == "realesrgan_x4plus":
+                image = self._upscale_realesrgan(image, realesrgan_model_path, upscale_outscale, device)
+                upscaled += 1
+            elif upscale_mode != "none":
+                raise ValueError(f"Unsupported upscale_mode: {upscale_mode}. Use none or realesrgan_x4plus.")
+
             if enable_resize_crop:
                 image = _resize_crop_pad(image, width, height, resize_mode)
             caption = self._caption(image, joycaption_model_dir, caption_prompt, max_new_tokens, device)
@@ -289,6 +355,7 @@ class AIVer2DatasetBuilder:
             f"Processed {processed} images, skipped {skipped}. "
             f"Background removed: {background_removed}. "
             f"Background kept: {background_kept}. "
+            f"Upscaled: {upscaled}. "
             f"Output: {output_path}",
         )
 

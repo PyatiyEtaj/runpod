@@ -30,7 +30,7 @@ python -m pip install \
   "torchaudio==$TORCHAUDIO_VERSION" \
   --index-url "$PYTORCH_INDEX_URL"
 python -m pip install \
-  transformers accelerate safetensors pillow scipy numpy timm einops sentencepiece protobuf kornia \
+  transformers accelerate safetensors pillow scipy numpy timm einops sentencepiece protobuf kornia opencv-python-headless realesrgan \
   -c "$DATASET_CONSTRAINTS"
 deactivate
 

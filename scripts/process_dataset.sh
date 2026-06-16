@@ -28,5 +28,6 @@ python "$PROJECT_DIR/scripts/process_dataset.py" \
   --output-dir "$PROCESSED_DATASET_DIR" \
   --rmbg-model-dir "$RMBG_MODEL_DIR" \
   --joycaption-model-dir "$JOYCAPTION_MODEL_DIR" \
+  --realesrgan-model "${REALESRGAN_X4PLUS_MODEL:-$PROJECT_DIR/models/upscaler/RealESRGAN_x4plus.pth}" \
   "$@"
 deactivate

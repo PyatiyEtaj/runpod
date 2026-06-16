@@ -13,7 +13,10 @@ set -a
 source .env
 set +a
 
-mkdir -p "$JOYCAPTION_MODEL_DIR" "$RMBG_MODEL_DIR" "$CACHE_DIR/huggingface"
+REALESRGAN_X4PLUS_MODEL="${REALESRGAN_X4PLUS_MODEL:-$PROJECT_DIR/models/upscaler/RealESRGAN_x4plus.pth}"
+REALESRGAN_X4PLUS_URL="${REALESRGAN_X4PLUS_URL:-https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth}"
+
+mkdir -p "$JOYCAPTION_MODEL_DIR" "$RMBG_MODEL_DIR" "$(dirname "$REALESRGAN_X4PLUS_MODEL")" "$CACHE_DIR/huggingface"
 
 DATASET_VENV="${DATASET_VENV:-$WORKSPACE_DIR/venv-dataset}"
 if [ ! -d "$DATASET_VENV" ]; then
@@ -38,9 +41,24 @@ hf download "$RMBG_REPO" \
   --local-dir "$RMBG_MODEL_DIR" \
   "${HF_ARGS[@]}"
 
+if [ ! -f "$REALESRGAN_X4PLUS_MODEL" ]; then
+  python - "$REALESRGAN_X4PLUS_URL" "$REALESRGAN_X4PLUS_MODEL" <<'PY'
+import sys
+import urllib.request
+from pathlib import Path
+
+url = sys.argv[1]
+target = Path(sys.argv[2])
+target.parent.mkdir(parents=True, exist_ok=True)
+with urllib.request.urlopen(url) as response:
+    target.write_bytes(response.read())
+PY
+fi
+
 echo "Downloaded:"
 echo "  JoyCaption: $JOYCAPTION_MODEL_DIR"
 echo "  RMBG-2.0:   $RMBG_MODEL_DIR"
+echo "  RealESRGAN: $REALESRGAN_X4PLUS_MODEL"
 
 if [ ! -f "$RMBG_MODEL_DIR/birefnet.py" ] || [ ! -f "$RMBG_MODEL_DIR/BiRefNet_config.py" ]; then
   echo

@@ -131,6 +131,7 @@ Dataset pipeline models are configured in `.env`:
 ```text
 JOYCAPTION_REPO=fancyfeast/llama-joycaption-alpha-two-hf-llava
 RMBG_REPO=briaai/RMBG-2.0
+REALESRGAN_X4PLUS_URL=https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth
 ```
 
 They are downloaded to:
@@ -138,6 +139,7 @@ They are downloaded to:
 ```text
 models/joycaption/llama-joycaption-alpha-two-hf-llava/
 models/rmbg/RMBG-2.0/
+models/upscaler/RealESRGAN_x4plus.pth
 ```
 
 ## Dataset Processor
@@ -195,6 +197,14 @@ bash scripts/process_dataset.sh --skip-resize-crop
 
 This keeps the image dimensions as-is while still running background removal and caption generation.
 
+For small source images, upscale after crop/background removal and before the final `1024x1024` resize:
+
+```bash
+bash scripts/process_dataset.sh --upscale-mode realesrgan_x4plus
+```
+
+The default upscaler model path is `REALESRGAN_X4PLUS_MODEL` from `.env`. Use `--upscale-outscale 2` if `x4` is too strong for a specific dataset.
+
 To add a filename prefix to every generated `.png + .txt` pair:
 
 ```bash
@@ -214,6 +224,7 @@ It does the full dataset pass:
 - reads images from `datasets/raw`;
 - removes background with `briaai/RMBG-2.0` for 80% of images;
 - keeps background unchanged for 20% of images;
+- optionally upscales with `RealESRGAN_x4plus`;
 - optionally resizes/crops to `1024x1024`;
 - captions with `fancyfeast/llama-joycaption-alpha-two-hf-llava`;
 - writes `.png + .txt` pairs to `datasets/processed`.
@@ -513,6 +524,8 @@ bash scripts/download_hf_models.sh
 
 ```bash
 bash scripts/process_dataset.sh
+bash scripts/process_dataset.sh --upscale-mode realesrgan_x4plus
+bash scripts/process_dataset.sh --crop-region full --resize-mode contain --upscale-mode realesrgan_x4plus --prefix mycharacter_
 ```
 
 Он создаст обработанные изображения и captions в:
@@ -543,4 +556,13 @@ bash scripts/train_flux_lora.sh
 
 ```bash
 bash scripts/start_comfyui.sh
+```
+
+
+fix dataset-venv
+```
+source /workspace/venv-dataset/bin/activate
+cd /workspace/ai-ver-2
+
+python -m pip install "opencv-python-headless>=4.8,<5.0" "realesrgan>=0.3.0,<0.4.0" -c constraints/dataset-cu124.txt
 ```

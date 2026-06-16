@@ -37,6 +37,9 @@ def main():
         action="store_true",
         help="Keep image dimensions and skip crop_region plus resize/crop/pad processing.",
     )
+    parser.add_argument("--upscale-mode", choices=["none", "realesrgan_x4plus"], default="none")
+    parser.add_argument("--realesrgan-model", default="/workspace/ai-ver-2/models/upscaler/RealESRGAN_x4plus.pth")
+    parser.add_argument("--upscale-outscale", type=float, default=4.0)
     parser.add_argument("--prefix", default="", help="Prefix for output .png and .txt filenames.")
     parser.add_argument("--max-new-tokens", type=int, default=128)
     parser.add_argument("--skip-background-removal-percent", type=float, default=20.0)
@@ -57,6 +60,9 @@ def main():
         crop_region=args.crop_region,
         resize_mode=args.resize_mode,
         enable_resize_crop=not args.skip_resize_crop,
+        upscale_mode=args.upscale_mode,
+        realesrgan_model_path=args.realesrgan_model,
+        upscale_outscale=args.upscale_outscale,
         output_prefix=args.prefix,
         max_new_tokens=args.max_new_tokens,
         skip_background_removal_percent=args.skip_background_removal_percent,
