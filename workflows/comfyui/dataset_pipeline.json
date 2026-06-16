@@ -23,6 +23,7 @@
   },
   "target": {
     "resize": {
+      "enabled": true,
       "width": 1024,
       "height": 1024,
       "mode": "contain_or_cover",
@@ -48,6 +49,8 @@
         "height": 1024,
         "crop_region": "full",
         "resize_mode": "contain",
+        "enable_resize_crop": true,
+        "output_prefix": "",
         "max_new_tokens": 128,
         "skip_background_removal_percent": 20.0,
         "skip_background_removal_seed": 42,

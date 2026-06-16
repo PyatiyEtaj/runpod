@@ -178,6 +178,29 @@ contain  # fit the whole image into 1024x1024 with transparent padding
 cover    # fill 1024x1024 and center-crop overflow
 ```
 
+For tall/narrow full-body photos, use:
+
+```bash
+bash scripts/process_dataset.sh --crop-region full --resize-mode contain
+```
+
+`full` controls which part of the source image is used. `resize-mode` controls how that selected image is converted to `1024x1024`.
+If you use `--crop-region full --resize-mode cover` on a tall image, the processor will still crop the center to fill the square. Use `contain` when the full body must remain visible.
+
+If your images are already resized/cropped manually, skip this stage:
+
+```bash
+bash scripts/process_dataset.sh --skip-resize-crop
+```
+
+This keeps the image dimensions as-is while still running background removal and caption generation.
+
+To add a filename prefix to every generated `.png + .txt` pair:
+
+```bash
+bash scripts/process_dataset.sh --prefix mycharacter_
+```
+
 Convenience wrappers:
 
 ```bash
@@ -191,7 +214,7 @@ It does the full dataset pass:
 - reads images from `datasets/raw`;
 - removes background with `briaai/RMBG-2.0` for 80% of images;
 - keeps background unchanged for 20% of images;
-- resizes/crops to `1024x1024`;
+- optionally resizes/crops to `1024x1024`;
 - captions with `fancyfeast/llama-joycaption-alpha-two-hf-llava`;
 - writes `.png + .txt` pairs to `datasets/processed`.
 

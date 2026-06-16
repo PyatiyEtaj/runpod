@@ -95,6 +95,8 @@ class AIVer2DatasetBuilder:
                 "height": ("INT", {"default": 1024, "min": 256, "max": 2048, "step": 64}),
                 "crop_region": (["full", "upper", "lower"], {"default": "full"}),
                 "resize_mode": (["contain", "cover"], {"default": "contain"}),
+                "enable_resize_crop": ("BOOLEAN", {"default": True}),
+                "output_prefix": ("STRING", {"default": ""}),
                 "max_new_tokens": ("INT", {"default": 128, "min": 32, "max": 512, "step": 16}),
                 "skip_background_removal_percent": ("FLOAT", {"default": 20.0, "min": 0.0, "max": 100.0, "step": 1.0}),
                 "skip_background_removal_seed": ("INT", {"default": 42, "min": 0, "max": 2147483647, "step": 1}),
@@ -228,6 +230,8 @@ class AIVer2DatasetBuilder:
         height,
         crop_region,
         resize_mode,
+        enable_resize_crop,
+        output_prefix,
         max_new_tokens,
         skip_background_removal_percent,
         skip_background_removal_seed,
@@ -249,9 +253,10 @@ class AIVer2DatasetBuilder:
         skipped = 0
         background_removed = 0
         background_kept = 0
+        output_prefix = str(output_prefix or "")
 
         for source in images:
-            stem = source.stem
+            stem = f"{output_prefix}{source.stem}"
             image_out = output_path / f"{stem}.png"
             caption_out = output_path / f"{stem}.txt"
 
@@ -260,7 +265,11 @@ class AIVer2DatasetBuilder:
                 continue
 
             image = Image.open(source)
-            image = _crop_region(image, crop_region)
+            if enable_resize_crop:
+                image = _crop_region(image, crop_region)
+            else:
+                image = ImageOps.exif_transpose(image).convert("RGBA")
+
             if _should_skip_background_removal(source, skip_background_removal_percent, skip_background_removal_seed):
                 image = ImageOps.exif_transpose(image).convert("RGBA")
                 background_kept += 1
@@ -268,7 +277,8 @@ class AIVer2DatasetBuilder:
                 image = self._remove_background(image, rmbg_model_dir, device)
                 background_removed += 1
 
-            image = _resize_crop_pad(image, width, height, resize_mode)
+            if enable_resize_crop:
+                image = _resize_crop_pad(image, width, height, resize_mode)
             caption = self._caption(image, joycaption_model_dir, caption_prompt, max_new_tokens, device)
 
             image.save(image_out)

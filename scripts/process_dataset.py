@@ -32,6 +32,12 @@ def main():
     parser.add_argument("--height", type=int, default=1024)
     parser.add_argument("--crop-region", choices=["full", "upper", "lower"], default="full")
     parser.add_argument("--resize-mode", choices=["contain", "cover"], default="contain")
+    parser.add_argument(
+        "--skip-resize-crop",
+        action="store_true",
+        help="Keep image dimensions and skip crop_region plus resize/crop/pad processing.",
+    )
+    parser.add_argument("--prefix", default="", help="Prefix for output .png and .txt filenames.")
     parser.add_argument("--max-new-tokens", type=int, default=128)
     parser.add_argument("--skip-background-removal-percent", type=float, default=20.0)
     parser.add_argument("--skip-background-removal-seed", type=int, default=42)
@@ -50,6 +56,8 @@ def main():
         height=args.height,
         crop_region=args.crop_region,
         resize_mode=args.resize_mode,
+        enable_resize_crop=not args.skip_resize_crop,
+        output_prefix=args.prefix,
         max_new_tokens=args.max_new_tokens,
         skip_background_removal_percent=args.skip_background_removal_percent,
         skip_background_removal_seed=args.skip_background_removal_seed,
