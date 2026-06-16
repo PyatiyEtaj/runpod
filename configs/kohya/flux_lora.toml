@@ -42,8 +42,8 @@ persistent_data_loader_workers = true
 
 cache_latents = true
 cache_latents_to_disk = true
-cache_text_encoder_outputs = true
-cache_text_encoder_outputs_to_disk = true
+cache_text_encoder_outputs = false
+cache_text_encoder_outputs_to_disk = false
 
 gradient_checkpointing = true
 sdpa = true
