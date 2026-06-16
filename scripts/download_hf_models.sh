@@ -24,7 +24,7 @@ if [ ! -d "$DATASET_VENV" ]; then
 fi
 
 source "$DATASET_VENV/bin/activate"
-python -m pip install "huggingface-hub>=0.28.1,<1.0" -c "$PROJECT_DIR/constraints/dataset-cu124.txt"
+python -m pip install "huggingface-hub>=0.28.1,<1.0" "hf_transfer>=0.1.8,<0.2.0" -c "$PROJECT_DIR/constraints/dataset-cu124.txt"
 
 export HF_HOME="$CACHE_DIR/huggingface"
 
