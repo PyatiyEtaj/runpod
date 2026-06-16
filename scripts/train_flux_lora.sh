@@ -17,6 +17,14 @@ fi
 
 KOHYA_VENV="${KOHYA_VENV:-$WORKSPACE_DIR/venv-kohya}"
 source "$KOHYA_VENV/bin/activate"
+
+if ! python - <<'PY'
+from huggingface_hub import cached_download  # noqa: F401
+PY
+then
+  python -m pip install "huggingface-hub>=0.25.2,<0.26.0" -c "$PROJECT_DIR/constraints/kohya-cu124.txt"
+fi
+
 cd "$KOHYA_DIR"
 
 export HF_HOME="$CACHE_DIR/huggingface"

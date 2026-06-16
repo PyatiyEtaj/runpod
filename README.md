@@ -446,10 +446,10 @@ rerun the updated bootstrap script. The project skips editable installation of t
 
 If pip prints dependency conflicts for `huggingface-hub` or `rich`, rerun the updated bootstrap script.
 
-Kohya currently uses older `transformers`, so `venv-kohya` is kept on:
+Kohya/sd-scripts still imports `cached_download`, so `venv-kohya` is kept on:
 
 ```text
-huggingface-hub>=0.28.1,<1.0
+huggingface-hub>=0.25.2,<0.26.0
 rich>=13.8.0
 ```
 
