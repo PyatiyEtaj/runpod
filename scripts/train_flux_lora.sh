@@ -10,8 +10,10 @@ set +a
 
 mkdir -p "$OUTPUT_DIR" "$SAMPLE_DIR" "$CACHE_DIR"
 
-if [ ! -d "$TRAIN_DATASET_DIR" ] || [ -z "$(find "$TRAIN_DATASET_DIR" -maxdepth 1 -type f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' \) -print -quit)" ]; then
-  echo "No training images found in $TRAIN_DATASET_DIR"
+if [ ! -d "$TRAIN_DATASET_DIR" ] || [ -z "$(find "$TRAIN_DATASET_DIR" -mindepth 2 -maxdepth 2 -type f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' \) -print -quit)" ]; then
+  echo "No training images found in Kohya folder layout under $TRAIN_DATASET_DIR"
+  echo "Expected images in a subfolder such as: $TRAIN_DATASET_DIR/10_subject"
+  echo "Run: bash scripts/prepare_dataset.sh"
   exit 1
 fi
 

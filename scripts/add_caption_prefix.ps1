@@ -1,5 +1,5 @@
 param(
-    [string]$Directory = "datasets/flux_lora",
+    [string]$Directory = "datasets/processed",
     [Parameter(Mandatory = $true)]
     [string]$Prefix,
     [switch]$Recurse

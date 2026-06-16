@@ -301,10 +301,11 @@ Final training dataset:
 
 ```text
 datasets/flux_lora/
-  0001.png
-  0001.txt
-  0002.png
-  0002.txt
+  10_subject/
+    0001.png
+    0001.txt
+    0002.png
+    0002.txt
 ```
 
 ## Train FLUX LoRA
