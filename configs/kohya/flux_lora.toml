@@ -29,7 +29,7 @@ network_dim = 32
 network_alpha = 32
 network_dropout = 0.0
 
-optimizer_type = "adamw8bit"
+optimizer_type = "adamw"
 learning_rate = 0.0001
 unet_lr = 0.0001
 text_encoder_lr = 0.00001
